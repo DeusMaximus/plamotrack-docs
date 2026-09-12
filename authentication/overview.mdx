@@ -1,0 +1,31 @@
+---
+title: "Authentication options in plamotrack"
+sidebarTitle: "Overview"
+description: "plamotrack supports password login, OpenID Connect (Google, Keycloak, Authentik), and personal access tokens for scripts and AI assistants. Choose the right method for your setup."
+---
+
+plamotrack has one owner account. You can sign in with a password, or delegate sign-in to an OpenID Connect provider like Google. Scripts, cron jobs, and AI assistants (Claude, ChatGPT) use personal access tokens instead of your session — they never touch your browser login.
+
+<CardGroup cols={2}>
+  <Card title="Password Login" icon="lock" href="/authentication/password-login">
+    The default. A one-time setup token from the API log plus a password you choose. Works from any browser that can reach your instance.
+  </Card>
+  <Card title="OIDC / Identity Provider" icon="id-card" href="/authentication/oidc">
+    Sign in with Google, Keycloak, Authentik, or any OpenID Connect provider. Required for passwordless Claude web and ChatGPT OAuth connections.
+  </Card>
+  <Card title="Personal Access Tokens" icon="key" href="/authentication/access-tokens">
+    For scripts, the REST API, and MCP clients like Claude Desktop and Claude Code. Your browser session is never used by these clients.
+  </Card>
+</CardGroup>
+
+## Which method is used where
+
+| Method | Used for |
+|---|---|
+| Password | Browser sign-in (local mode) |
+| OIDC provider | Browser sign-in (oidc mode), Claude web & ChatGPT web OAuth |
+| Personal access token | REST API calls, Claude Desktop, Claude Code, any MCP client |
+
+<Note>
+  You cannot be locked out of plamotrack without a recovery path. See the relevant page for recovery options specific to your auth mode.
+</Note>

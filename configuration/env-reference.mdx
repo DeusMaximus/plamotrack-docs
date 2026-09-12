@@ -1,0 +1,58 @@
+---
+title: "plamotrack configuration reference (.env settings)"
+sidebarTitle: "Configuration"
+description: "All plamotrack settings live in a single .env file. Reference for every available key: database, network, authentication, MCP OAuth, and runtime options."
+---
+
+Every plamotrack setting lives in `.env` at the root of the plamotrack folder — one file that both Docker Compose and the app read. Edit it with a text editor, then run `docker compose up -d` to apply changes.
+
+<Note>
+  `.env.example` in the plamotrack folder contains every available key with comments. Copy it to `.env` when you first install, then edit only what you need.
+</Note>
+
+## Database
+
+| Key | Default | What it does |
+|---|---|---|
+| `POSTGRES_PASSWORD` | — | Required. Your database password. Only read when the database is first created. |
+| `POSTGRES_USER` | `plamotrack` | Database user. |
+| `POSTGRES_DB` | `plamotrack` | Database name. |
+| `DATABASE_URL` | — | Set this to use an existing Postgres you manage yourself. |
+
+## Network & hosting
+
+| Key | Default | What it does |
+|---|---|---|
+| `WEB_BIND` | `127.0.0.1` | Which network interface to listen on. Keep on `127.0.0.1` behind a proxy on the same host. See [Local & LAN](/deployment/local-and-lan). |
+| `WEB_PORT` | `8080` | Port for the UI, API, and MCP endpoint. |
+| `ALLOWED_HOSTS` | — | Comma-separated hostnames the instance will respond to (e.g. `nas.lan,plamotrack.home.arpa`). Wildcards like `*.home.arpa` work. See [Local & LAN](/deployment/local-and-lan). |
+| `PUBLIC_BASE_URL` | — | The `https://` address users see in their browser. Required behind a TLS proxy. See [Reverse Proxy](/deployment/reverse-proxy). |
+| `TRUSTED_PROXIES` | — | IP of a reverse proxy or Cloudflare connector on the same host (`127.0.0.1`) or another machine (its IP). |
+| `ALLOWED_ORIGINS` | — | Extra browser origins allowed to write. Rarely needed. |
+
+## Authentication
+
+| Key | Default | What it does |
+|---|---|---|
+| `AUTH_MODE` | `local` | `local`: password login. `oidc`: sign in via an identity provider. |
+| `OIDC_ISSUER` | — | OIDC mode. Your provider's issuer URL (e.g. `https://accounts.google.com`). |
+| `OIDC_CLIENT_ID` | — | OIDC mode. Your provider's client ID. |
+| `OIDC_CLIENT_SECRET` | — | OIDC mode. Your provider's client secret. |
+| `MCP_OAUTH_SIGNING_KEY` | — | OIDC mode. 32 random bytes as 64 hex chars. Generate with `openssl rand -hex 32`. Signs tokens for Claude web / ChatGPT OAuth. |
+| `MCP_OAUTH_ALLOWED_REDIRECT_URIS` | — | Optional. Restrict which callback URIs MCP clients may register. Leave unset unless you have a reason. |
+
+## Currency and localisation
+
+| Key | Default | What it does |
+|---|---|---|
+| `REFERENCE_CURRENCY` | `AUD` | Your currency for order prices and comparisons. Any ISO 4217 code (e.g. `USD`, `GBP`, `JPY`). First-run only — after setup, change it in Settings → General. |
+
+## Maintenance
+
+| Key | Default | What it does |
+|---|---|---|
+| `AUDIT_RETENTION_DAYS` | — | Optional. Auto-prune security audit log rows older than this many days. Unset = keep forever. |
+
+<Note>
+  Changes to `.env` need `docker compose up -d` to take effect. Some settings (like `REFERENCE_CURRENCY` and `POSTGRES_PASSWORD`) are only read at first run and cannot be changed by editing `.env` after the database exists.
+</Note>

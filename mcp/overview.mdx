@@ -1,0 +1,47 @@
+---
+title: "Connect your AI assistant to plamotrack via MCP"
+sidebarTitle: "Overview"
+description: "plamotrack has a built-in MCP server. Connect Claude or ChatGPT to manage your collection conversationally — log orders, move kits, check stock, all by talking."
+---
+
+plamotrack ships with a Model Context Protocol (MCP) server built in — same process, no separate service to install or run. Point Claude, ChatGPT, or any MCP-compatible AI assistant at your instance and you can manage your collection in natural language: log an order from an email, mark a parcel received, check what's on your bench — all by talking.
+
+<Note>
+  MCP (Model Context Protocol) is an open standard that lets AI assistants connect to external services. plamotrack implements it natively — no plugin, no middleware, no separate process.
+</Note>
+
+## What you can do
+
+Your AI assistant has access to over 30 tools covering your entire collection. Here are a few examples of what that looks like in practice:
+
+- **"The Sinanju arrived"** → Claude calls `mark_order_received`, the kit moves to backlog, and your Gundam Markers are on hand.
+- **"Add that Gundam Express order from my email"** → Claude reads the email, calls `create_order`, and kits and supplies are logged against a new pending order.
+- **"What's on my bench?"** → Claude calls `list_kits` filtered to Building status and tells you exactly what you're supposed to be working on.
+
+## Two ways to connect
+
+<CardGroup cols={2}>
+  <Card title="Personal access token" icon="key" href="/mcp/claude-desktop">
+    Create a token in **Settings → Access tokens**, then paste it into your AI client's config. Works with Claude Desktop, Claude Code, and any client that can send an HTTP header. Best for local and LAN instances.
+  </Card>
+  <Card title="OAuth sign-in" icon="arrow-right-to-bracket" href="/mcp/claude-web-chatgpt">
+    For Claude.ai and ChatGPT on the web. Requires OIDC mode and TLS. You sign in through your identity provider — no token to paste or store.
+  </Card>
+</CardGroup>
+
+## The MCP endpoint
+
+The MCP endpoint is at `<your instance>/mcp/`. Always include the trailing slash.
+
+| Instance | Endpoint |
+|---|---|
+| Local | `http://localhost:8080/mcp/` |
+| With TLS | `https://plamotrack.example/mcp/` |
+
+<Warning>
+  If you reach plamotrack by a name other than `localhost` — a LAN hostname, a container name, a WireGuard mesh address — add that name to `ALLOWED_HOSTS` in `.env` and restart, or you'll get a `421 Misdirected Request` error. See [Local & LAN deployment](/deployment/local-and-lan) for details.
+</Warning>
+
+## Agent skills
+
+The MCP tools are deliberately generic — nothing in plamotrack knows what an "HG" grade is or how Bandai kit numbers work. You can teach your AI assistant those conventions by installing an **agent skill**: a small instruction file that loads alongside your MCP connection and keeps records consistent. The `plamotrack-gunpla` skill covers kit naming, grade buckets, series naming, Gundam Markers, and more. See the [Agent Skills](/mcp/agent-skills) page for how to install one.

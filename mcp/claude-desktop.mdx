@@ -1,0 +1,86 @@
+---
+title: "Connect Claude Desktop or Claude Code to plamotrack"
+sidebarTitle: "Claude Desktop"
+description: "Configure Claude Desktop or Claude Code to use plamotrack's MCP server with a personal access token. Includes config for local, LAN, and TLS-enabled instances."
+---
+
+Claude Desktop and Claude Code connect to plamotrack using your instance's MCP endpoint and a personal access token. Once connected, Claude can log orders, check your collection, adjust stock, and more — just by talking.
+
+## Prerequisites
+
+You need a personal access token before you configure the client. Create one at **Settings → Access tokens** in plamotrack. Read-only is enough for an agent that just looks things up; read-and-write lets it log orders, move kits along the pipeline, and adjust stock. See [Access Tokens](/authentication/access-tokens) for more detail.
+
+## Claude Desktop
+
+<Steps>
+  <Step title="Open the Claude Desktop config file">
+    The config file location depends on your operating system:
+
+    - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+    - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+  </Step>
+
+  <Step title="Add the plamotrack entry">
+    Claude Desktop requires a stdio connection, so use `mcp-remote` to bridge plamotrack's HTTP endpoint. Add the following to your config, replacing `ptk_your_token_here` with your actual token:
+
+    ```json claude_desktop_config.json
+    {
+      "mcpServers": {
+        "plamotrack": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "mcp-remote",
+            "http://localhost:8080/mcp/",
+            "--header",
+            "Authorization:${PLAMOTRACK_AUTH}"
+          ],
+          "env": {
+            "PLAMOTRACK_AUTH": "Bearer ptk_your_token_here"
+          }
+        }
+      }
+    }
+    ```
+
+    Replace `http://localhost:8080/mcp/` with your instance URL if it's different.
+  </Step>
+
+  <Step title="Allow plain HTTP if needed">
+    If your instance URL is plain `http://` and Claude Desktop complains, add `"--allow-http"` to the end of the `args` array. An `https://` instance doesn't need this flag.
+  </Step>
+
+  <Step title="Restart Claude Desktop">
+    Save the config file and restart Claude Desktop for the change to take effect.
+  </Step>
+
+  <Step title="Verify the connection">
+    The plamotrack tool should now appear in Claude Desktop. Try asking: *"What's in my Gunpla backlog?"*
+  </Step>
+</Steps>
+
+<Note>
+  The token goes in the `env` block rather than directly in `args` because Claude Desktop splits `args` on spaces on some platforms, and `Bearer ptk_…` contains a space. Putting it in `env` and referencing it as `${PLAMOTRACK_AUTH}` sidesteps the issue entirely.
+</Note>
+
+## Claude Code
+
+Run this command, replacing the URL and token as needed:
+
+```bash
+claude mcp add --transport http plamotrack http://localhost:8080/mcp/ \
+  --header "Authorization: Bearer ptk_your_token_here"
+```
+
+## Verifying the connection
+
+Once connected, try asking Claude one of these to confirm everything is working:
+
+- *"What's on my build bench?"*
+- *"How many kits do I have in backlog?"*
+
+Claude should call plamotrack's tools and answer based on your actual collection.
+
+<Tip>
+  If your instance isn't on `localhost` — for example, it's on a LAN hostname like `nas.lan` — make sure that hostname is listed in `ALLOWED_HOSTS` in your `.env` file. Without it, plamotrack returns `421 Misdirected Request` and the connection fails. See [Local & LAN](/deployment/local-and-lan) for details.
+</Tip>

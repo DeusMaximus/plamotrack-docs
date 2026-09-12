@@ -1,0 +1,86 @@
+---
+title: "Import and export your collection data in plamotrack"
+sidebarTitle: "Import & Export"
+description: "Export your entire collection as a ZIP of CSVs, import it back to restore or merge, and use the starter sheet to bring in an existing spreadsheet with one row per kit."
+---
+
+Your collection data is always yours. Export it as a ZIP of plain CSVs, import it back at any time, or move it to a new instance. Every import shows you a full preview of what will change before anything is written — nothing is committed until you click **Apply**.
+
+All import and export options live in **Settings → Data management**.
+
+## Getting data out
+
+plamotrack gives you two ways to export:
+
+1. **Full archive (.zip)** — go to **Settings → Data management → Export**. You get one CSV per table plus a `manifest.json` that records the export timestamp, app version, and row counts. Use this for backups, moving instances, or keeping an offline copy.
+
+2. **Single table (.csv)** — available from the Export section or from the button on any list page. Use this when you want to pull one table into a spreadsheet without the rest of the collection.
+
+## Importing your collection for the first time
+
+If you're coming from a spreadsheet, Notion, or Baserow, the **starter sheet** is the fastest path in.
+
+<Steps>
+  <Step title="Download the starter sheet">
+    Go to **Settings → Data management → Starter sheet** and download `starter-sheet.csv`.
+  </Step>
+  <Step title="Fill it in">
+    Add one row per kit. The key columns are:
+
+    | Column | Notes |
+    |---|---|
+    | `kit_name` | Required |
+    | `grade` | Required |
+    | `status` | `pre_ordered`, `ordered`, `in_transit`, `backlog`, `building`, or `complete`. Blank defaults to `backlog`. |
+    | `retailer` | Where you bought it. Blank means no order recorded — just a kit in your collection. |
+    | `order_date` | The purchase date |
+    | `order_number` | The shop's order reference |
+    | `unit_price` | In major units (e.g. `49.99`) |
+
+    You don't need to describe orders separately. Write the kits; plamotrack works out the retailers, orders, and order lines from the rows.
+  </Step>
+  <Step title="Import the sheet">
+    Go to **Settings → Data management → Import**, upload your filled-in sheet, and review the preview. Click **Apply** when it looks right.
+  </Step>
+</Steps>
+
+<Tip>
+  Fill in `order_number` whenever a shop and date combination isn't unique. Rows that share the same retailer, order date, and order number collapse into one order — even across separate imports. This is what keeps a multi-kit order together correctly.
+</Tip>
+
+## Import modes
+
+Choose the right mode before you import:
+
+| Mode | Existing records | New records |
+|---|---|---|
+| **Merge** (default) | Updated | Added |
+| **Add only** | Left completely alone | Added |
+| **Replace everything** | Entire collection deleted first | Added |
+
+**Replace everything** requires you to type `REPLACE` to confirm. plamotrack tells you how many existing records it will delete before you do — read that number before you type it.
+
+## Preview before you commit
+
+Every import — regardless of mode — shows you a full preview of what will change: records to add, update, or delete. Nothing is written until you click **Apply**.
+
+The apply step checks against a fingerprint of what you previewed. If your collection changed between the preview and the apply (because you moved a kit or received an order in the meantime), plamotrack refuses and asks you to preview again. You only ever apply exactly what you reviewed.
+
+## Re-importing safely
+
+Every exported row includes an internal ID. Importing an archive back into the same instance matches those IDs to your existing records — so re-importing is always a no-op. Nothing changes, because nothing has changed. Use this freely for backup verification.
+
+## Limits
+
+| Limit | Value |
+|---|---|
+| Maximum upload size | 10 MB |
+| Maximum unpacked size | 100 MB |
+| Maximum rows per import | 50,000 |
+| File encoding | UTF-8 required |
+
+If your spreadsheet app offers a plain "CSV" option and a "CSV UTF-8" option, pick the second one.
+
+<Warning>
+  CSV cells whose values start with `=`, `+`, `-`, or `@` may be interpreted as formulas by spreadsheet apps when you open an export. These are your data bytes, not formulas — plamotrack exports them exactly as stored so they round-trip correctly. Leave your spreadsheet's formula-detection warnings enabled, especially when opening exports from someone else.
+</Warning>

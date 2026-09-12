@@ -1,0 +1,119 @@
+---
+title: "plamotrack MCP tools reference"
+sidebarTitle: "MCP Tools"
+description: "Full reference for the 30+ MCP tools plamotrack exposes to AI assistants. Covers kits, orders, inventory, retailers, stock, and collection summary."
+---
+
+When your AI assistant connects to plamotrack, it has access to over 30 tools organised by area. This page lists every tool and what it does — useful if you want to understand what your agent can and can't do, or to write precise instructions for it.
+
+<Note>
+  Import and export have no MCP tools. An agent that can silently replace your entire collection is not a feature.
+</Note>
+
+## Collection overview
+
+<Accordion title="get_meta">
+  Returns the app version and the instance's reference currency — the currency an omitted `currency_code` defaults to when logging orders.
+</Accordion>
+
+<Accordion title="get_summary">
+  Returns your collection at a glance: kits per status, and orders per stage (pre-ordered, ordered, in transit, received). These are the same numbers shown on the Home page.
+</Accordion>
+
+## Kits
+
+<Accordion title="list_kits">
+  Lists kits in your collection, with optional filters for status, grade, or series. Use `sort=recent` to surface kits that moved most recently; use `limit` to cap the number returned.
+</Accordion>
+
+<Accordion title="list_kit_series">
+  Returns every series name already in use in your collection. Check this before creating a new series to avoid ending up with "Iron-Blooded Orphans", "IBO", and "Iron Blooded Orphans" as three separate series.
+</Accordion>
+
+<Accordion title="get_kit">
+  Returns one kit in full — all fields, including status, grade, series, rating, notes, and build dates.
+</Accordion>
+
+<Accordion title="create_kit">
+  Adds a kit that wasn't purchased through an order — a gift, a trade, or a carry-over from before you started tracking. For kits you bought, use `create_order` instead: that records the retailer, the spend, and the kit in one step.
+</Accordion>
+
+<Accordion title="update_kit_status">
+  Moves a kit along the pipeline — for example, from Backlog to Building, or from Building to Complete. Dates are recorded alongside each status change.
+</Accordion>
+
+<Accordion title="update_kit">
+  Edits a kit's details: name, grade, series, rating, notes, and build start/finish dates.
+</Accordion>
+
+## Catalog & inventory
+
+These tools cover tools, consumables, upgrade parts, and display gear.
+
+<Accordion title="search_catalog">
+  Searches all four catalog tables at once — the same search the UI typeahead uses. Agents hitting this tool land on the same de-duplication as a human, so "Extra Thin Cement" doesn't become two separate entries.
+</Accordion>
+
+<Accordion title="list_catalog_items">
+  Returns all items from one catalog table, optionally filtered by category. Use this when you want a complete picture of a table rather than a keyword search.
+</Accordion>
+
+<Accordion title="list_catalog_categories">
+  Returns category names already in use on a specific catalog table. Check this before writing a new category name to avoid spelling variants.
+</Accordion>
+
+<Accordion title="create_catalog_tool / _consumable / _upgrade / _display">
+  Adds a catalog item without a purchase — a first stocktake, a gift, or something you already owned before you started tracking. There's one tool per catalog type, each accepting the fields specific to that table.
+</Accordion>
+
+<Accordion title="update_catalog_tool / _consumable / _upgrade / _display">
+  Edits a catalog item's details. Each tool handles one catalog type and accepts only that table's own fields.
+</Accordion>
+
+<Accordion title="adjust_stock">
+  Nudges a quantity up or down, with a reason. Use this for corrections, stocktakes, or manual adjustments — not for purchases, which go through `create_order`.
+</Accordion>
+
+<Accordion title="apply_upgrade">
+  Records an upgrade part going onto a specific kit. Decrements the part's stock and creates a record of what went where.
+</Accordion>
+
+<Accordion title="withdraw_upgrade_application">
+  Undoes an upgrade application. You choose whether the part goes back into stock or not.
+</Accordion>
+
+## Retailers
+
+<Accordion title="list_retailers">
+  Returns every shop on record, including each retailer's report card: rating, packing quality, shipping speed, and the would-you-order-again field.
+</Accordion>
+
+<Accordion title="create_retailer / update_retailer">
+  Adds a shop or updates an existing one — name, URL, notes, and the full report card.
+</Accordion>
+
+## Orders
+
+<Accordion title="create_order">
+  Creates a full order with line items. Kit lines fan out into individual kit rows (two Zakus on one line becomes two separate kits in your collection). Retailers are matched by name or created automatically if they don't exist yet.
+</Accordion>
+
+<Accordion title="list_orders">
+  Lists orders, optionally filtered to pending-only — useful when an agent is matching a shipping notification to an existing order. Use `sort=recent` to surface the most recently updated orders; use `limit` to cap the results.
+</Accordion>
+
+<Accordion title="get_order">
+  Returns one order in full: header fields, all lines, and current status. This is the starting point for any edit.
+</Accordion>
+
+<Accordion title="update_order">
+  Corrects an order's header fields and/or its line set. Refuses to silently drop lines you didn't explicitly restate — if you omit a line, the tool asks you to confirm before removing it.
+</Accordion>
+
+<Accordion title="mark_order_received">
+  Marks an order as received: applies stock for all inventory lines, and advances each kit line's kits to Backlog. Accepts an optional arrival date so you can log a delivery after the fact.
+</Accordion>
+
+<Accordion title="mark_order_shipped">
+  Marks an order as shipped: moves the order's Ordered kits to In Transit. Accepts an optional ship date for shipping notifications logged after the fact. Never touches stock — that only happens on receipt.
+</Accordion>

@@ -1,0 +1,95 @@
+---
+title: "Install plamotrack with Docker in three minutes"
+sidebarTitle: "Installation"
+description: "Install plamotrack on your own machine or server using Docker Compose. You need Docker installed — nothing else. The whole stack starts with one command."
+---
+
+To run plamotrack you need Docker and about three minutes. That's it — there's no separate database to set up, no config files to juggle beyond one `.env`, and no accounts to create anywhere. The images build from the repo, and a single `docker compose` command brings the whole stack up and waits until it's healthy.
+
+<Info>
+  **Prerequisite: Docker.** If you don't have it yet, install it from [docs.docker.com/get-started/get-docker/](https://docs.docker.com/get-started/get-docker/) and come back here.
+</Info>
+
+## Installation
+
+<Steps>
+  <Step title="Clone the repo">
+    Run the following command to clone plamotrack and move into its directory:
+
+    ```bash
+    git clone https://github.com/DeusMaximus/plamotrack.git && cd plamotrack
+    ```
+  </Step>
+
+  <Step title="Copy and edit the config file">
+    Copy the example environment file to create your own `.env`:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    Open `.env` in any text editor and replace the `change-me` placeholder in `POSTGRES_PASSWORD` with a real password:
+
+    ```bash
+    POSTGRES_PASSWORD=change-me  # replace this
+    ```
+
+    <Warning>
+      This password protects your database. Choose something real — don't leave it as `change-me`. If you change it after the database volume has already been created, Postgres won't pick up the new value and the stack will fail to start.
+    </Warning>
+  </Step>
+
+  <Step title="Start the stack">
+    Build the images and bring everything up:
+
+    ```bash
+    docker compose up -d --build --wait
+    ```
+
+    The first run builds two images, which takes a couple of minutes. After that, starting the stack takes seconds. The `--wait` flag means the command only returns once all services are healthy — if something goes wrong, you'll see it here rather than discovering it later.
+  </Step>
+
+  <Step title="Open plamotrack">
+    Navigate to [http://localhost:8080](http://localhost:8080) in your browser. You'll see a setup screen asking for a one-time token and a password. That's covered on the [First Run](/first-run) page.
+  </Step>
+</Steps>
+
+## What just started
+
+Running `docker compose up` starts four containers, but only **one port is published to your machine**. Everything else communicates over Docker's internal network and is not reachable from outside the stack.
+
+| Address | What it is |
+|---|---|
+| `http://localhost:8080` | The app |
+| `http://localhost:8080/api/…` | REST API — e.g. `/api/kits`, or `/api/docs` for interactive docs |
+| `http://localhost:8080/mcp/` | MCP endpoint for AI assistants |
+
+The database and the API container are not exposed externally — they talk to each other over Docker's internal network. You also have a `migrate` container that runs the database migrations and then exits cleanly; if you see it listed as `Exited (0)`, that's success, not a problem.
+
+## Changing the port
+
+If port 8080 is already in use on your machine, set `WEB_PORT` in `.env` to any free port, then bring the stack back up:
+
+```bash
+# in .env
+WEB_PORT=9090
+```
+
+```bash
+docker compose up -d
+```
+
+## Using your own Postgres
+
+By default plamotrack starts its own Postgres container. If you'd rather use a Postgres instance you already manage, uncomment `DATABASE_URL` in `.env` and set it to your connection string:
+
+```bash
+# in .env
+DATABASE_URL=postgresql+asyncpg://user:password@host:5432/plamotrack
+```
+
+When `DATABASE_URL` is set, the `POSTGRES_*` values only configure the bundled `db` service — you can leave them as-is or ignore them entirely.
+
+<Note>
+  By default plamotrack only listens on `127.0.0.1`, which means only your own machine can connect. To reach it from other devices on your network, or from the internet, see [Deployment](/deployment/local-and-lan) for the supported options and what was tested for each.
+</Note>

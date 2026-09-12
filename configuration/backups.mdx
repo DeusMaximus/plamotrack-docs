@@ -1,0 +1,66 @@
+---
+title: "Back up and restore your plamotrack collection"
+sidebarTitle: "Backups"
+description: "Export a full archive from Settings before upgrading. Restore it with pg_restore or by re-importing the CSV archive. Covers all three restore scenarios."
+---
+
+Your collection is in a Postgres database inside the Docker stack. There are two ways to back it up: a PostgreSQL dump (full fidelity, required for proper restores) and the CSV archive export in the app (great for a human-readable copy you can open in Excel). Always back up before upgrading.
+
+## Quick backup from the app
+
+Go to **Settings → Data management → Export** and download the ZIP archive. This is a CSV export — it's human-readable and can be imported back into plamotrack. For a complete database backup that preserves sessions, access tokens, and MCP client links, use the `pg_dump` method below.
+
+## Database backup with pg_dump
+
+Run the following command from your plamotrack directory. The dump file is a portable Postgres archive.
+
+```bash
+docker compose exec -T db \
+  pg_dump -U plamotrack plamotrack \
+  --no-owner --no-acl -F c \
+  > backup-$(date +%Y%m%d).dump
+```
+
+## Restoring a dump
+
+Restore into an empty database — `pg_restore` will not merge cleanly into a populated one.
+
+<Steps>
+  <Step title="Stop the API (keeps the database running)">
+    ```bash
+    docker compose stop api web migrate
+    ```
+  </Step>
+  <Step title="Drop and recreate the database">
+    ```bash
+    docker compose exec db psql -U plamotrack -c 'DROP DATABASE plamotrack;'
+    docker compose exec db psql -U plamotrack -c 'CREATE DATABASE plamotrack;'
+    ```
+  </Step>
+  <Step title="Restore the dump">
+    ```bash
+    docker compose exec -T db \
+      pg_restore -U plamotrack -d plamotrack --no-owner --no-acl \
+      < backup-20260101.dump
+    ```
+  </Step>
+  <Step title="Start everything back up">
+    ```bash
+    docker compose up -d --wait
+    ```
+  </Step>
+</Steps>
+
+## What survives a restore
+
+What comes back depends on which half of the backup you restore and which `.env` you pair it with. The deployment gate runs all three of these scenarios on every release.
+
+| You restore | Collection | Sessions | Access tokens | Linked MCP clients |
+|---|---|---|---|---|
+| Dump + same `.env` | ✅ intact | ✅ still signed in | ✅ still valid | ✅ still linked |
+| Dump + different `.env` | ✅ intact | ✅ still signed in | ✅ still valid | ⚠️ clients re-authorise once |
+| Dump taken before a client was linked | ✅ intact | ✅ still signed in | ✅ still valid | ⚠️ that client re-authorises |
+
+<Warning>
+  Never run `docker compose down -v` unless you intend to delete the database. The `-v` flag deletes Docker volumes including your Postgres data. Running `docker compose down` without `-v` is safe — the volume survives.
+</Warning>

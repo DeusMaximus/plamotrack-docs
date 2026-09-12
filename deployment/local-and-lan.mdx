@@ -1,0 +1,85 @@
+---
+title: "Run plamotrack on your PC or home network"
+sidebarTitle: "Local & LAN"
+description: "Access plamotrack from just your own machine, over a home network, or via a private mesh like Tailscale. Covers WEB_BIND, ALLOWED_HOSTS, and SSH tunnels."
+---
+
+By default plamotrack only listens on `127.0.0.1` — your own machine. This is the safest default: nothing on your network can connect unless you explicitly open it up. This page covers three scenarios: just your own PC, occasional remote access via SSH tunnel, and always-available access on your home or office network (or a private mesh like Tailscale or WireGuard).
+
+## Just your own machine
+
+Nothing to configure. Open `http://localhost:8080` and you're there. The app, the REST API at `http://localhost:8080/api/`, and the MCP endpoint at `http://localhost:8080/mcp/` are all available. `WEB_BIND` stays at its default of `127.0.0.1` — only your own machine can connect.
+
+## Occasional access from another device
+
+If you only need remote access now and then, an SSH tunnel is the cleanest option. You don't change any configuration — `WEB_BIND` stays on loopback, nothing new is exposed — and it works from anywhere you can SSH in.
+
+Run this on your laptop:
+
+```bash
+ssh -N -L 8080:127.0.0.1:8080 you@your-server
+```
+
+Then open `http://localhost:8080` on your laptop. The tunnel forwards your local port 8080 to the server's loopback, so plamotrack appears just as it would locally. SSH keeps the session cookie and any tokens off the network entirely. Close the terminal when you're done and the tunnel drops.
+
+## Always-on access on your home network (LAN)
+
+To make plamotrack reachable from any device on your home or office network, set these two lines in your `.env`:
+
+```ini
+WEB_BIND=0.0.0.0
+ALLOWED_HOSTS=nas.lan,192.168.1.10  # whatever you'll type into the address bar
+```
+
+Then bring the stack back up:
+
+```bash
+docker compose up -d
+```
+
+**Why `ALLOWED_HOSTS` is not optional here:** `WEB_BIND=0.0.0.0` binds to every interface but names none of them, so plamotrack has no way to know what you'll type in the address bar. The instance only responds to names it knows — if you reach it by a hostname that isn't listed, you'll get a `421 Misdirected Request` error. Add whatever names or IP addresses you'll actually use, comma-separated, without port numbers. Then `docker compose up -d` — nothing is lost while it's wrong.
+
+<Warning>
+  Plain HTTP on a LAN means your session cookie travels in clear text. That's
+  fine on a trusted home network where you control every device. It's not fine
+  on a shared network, a student-house Wi-Fi, or anywhere else you don't control
+  who's listening. For those situations, use a VPN/mesh (see below) or expose
+  plamotrack through a TLS proxy instead.
+</Warning>
+
+<Warning>
+  On Linux, Docker inserts its own firewall rules to forward published container
+  ports — and that traffic bypasses the `INPUT` rules that `ufw` and `firewalld`
+  work with. Running `ufw deny 8080` typically does **not** block a published
+  container port. The reliable control is `WEB_BIND`: keep it on a private
+  address rather than `0.0.0.0` if you don't want the port reachable from
+  certain interfaces. If you do need host-firewall rules to apply to Docker
+  traffic, they belong in the `DOCKER-USER` chain.
+</Warning>
+
+## Private mesh (Tailscale, WireGuard, NetBird, etc.)
+
+A WireGuard-based mesh gives your server an address that only your own devices can route to — better than a plain LAN because it works across the internet too, and the mesh itself provides the confidentiality that plain HTTP lacks.
+
+Set `WEB_BIND` to your server's mesh IP address. If you'll access plamotrack by a mesh DNS name rather than the IP directly, add that name to `ALLOWED_HOSTS` as well:
+
+```ini
+WEB_BIND=100.x.y.z                    # your server's mesh IP
+ALLOWED_HOSTS=nas.tail1234.ts.net     # only if using a mesh DNS name
+```
+
+The bind address is automatically a name plamotrack answers to, but a mesh hostname is not — that's why the second line is needed when you use one. If you'll only ever access it by the raw IP address, you can leave `ALLOWED_HOSTS` unset.
+
+## Got a 421 error?
+
+You reached the instance by a name it doesn't know. Add that name to `ALLOWED_HOSTS` in `.env`:
+
+```ini
+ALLOWED_HOSTS=the-name-you-used
+```
+
+Then run `docker compose up -d`. Nothing is lost — the collection, sessions, and tokens are all untouched. The fix takes effect immediately once the stack restarts.
+
+<Note>
+  To expose plamotrack to the internet with HTTPS, see [Cloudflare Tunnel](/deployment/cloudflare-tunnel) or [VPS + Caddy](/deployment/vps-caddy).
+</Note>

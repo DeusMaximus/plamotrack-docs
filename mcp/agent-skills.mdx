@@ -1,0 +1,60 @@
+---
+title: "Teach your AI Gunpla conventions with agent skills"
+sidebarTitle: "Agent Skills"
+description: "Agent skills are convention files that teach your AI assistant Gunpla naming rules, grade buckets, and series naming — so kit records come out consistent."
+---
+
+plamotrack's MCP tools are deliberately generic — the app doesn't know what a "HG" grade is or how Bandai kit numbers work. That knowledge lives in **agent skills**: small instruction files you install alongside the MCP connection that teach your AI assistant the conventions for your hobby. Without a skill, an agent left to its own devices can easily create "Iron-Blooded Orphans", "IBO", and "Iron Blooded Orphans" as three different series. With one, records come out consistent.
+
+## The Gunpla skill
+
+There is one skill available right now: `plamotrack-gunpla`. It covers:
+
+- **Kit naming conventions** — how to write kit names consistently across your collection
+- **Bandai kit numbers** — how to read and record them
+- **Grade buckets** — HG, MG, PG, RG, SD, and their associated scales
+- **Series naming** — canonical names for Gundam series (e.g. "Mobile Suit Gundam", "Iron-Blooded Orphans") and when abbreviations are and aren't appropriate
+- **Gundam Markers, decals, and consumable categories** — so your inventory stays tidy
+- **Common retailer names** — standard spellings for HLJ, Gundam Base, and other familiar shops
+
+## Installing in Claude Desktop
+
+<Steps>
+  <Step title="Create a zip of the skill folder">
+    In the plamotrack repo's `skills/` folder, find `plamotrack-gunpla/` and zip it:
+
+    ```bash
+    cd skills && zip -r plamotrack-gunpla.zip plamotrack-gunpla
+    ```
+
+    The zip must contain the `plamotrack-gunpla` folder, not the loose files inside it. If you're downloading from GitHub, zip the folder after downloading — don't zip the individual files directly.
+  </Step>
+
+  <Step title="Enable Skills in Claude Desktop">
+    In Claude Desktop, go to **Settings → Capabilities** and make sure **Skills** is enabled.
+  </Step>
+
+  <Step title="Upload the skill">
+    Click **Upload skill** and select the `plamotrack-gunpla.zip` file you created.
+  </Step>
+
+  <Step title="Confirm your MCP connection">
+    Make sure Claude is also connected to your plamotrack MCP server. See [Claude Desktop](/mcp/claude-desktop) if you haven't set that up yet.
+  </Step>
+
+  <Step title="Start a collection conversation">
+    The skill loads itself automatically when the conversation touches your collection — you don't need to invoke it by name. Saying something like *"log the three kits I just ordered from HLJ"* is enough to activate it.
+  </Step>
+</Steps>
+
+<Tip>
+  You don't need to invoke the skill by name or mention it at all. As long as Claude Desktop is connected to plamotrack and the skill is installed, it activates automatically whenever your collection comes up in conversation.
+</Tip>
+
+## Installing in other clients
+
+The `SKILL.md` file inside the skill folder is plain Markdown. For Claude Code, Claude.ai, or any other agent that has a "system instructions" or "standing context" mechanism, paste the body of `SKILL.md` directly into that field. The skill doesn't care how it's delivered — it just needs to reach your agent's context.
+
+<Note>
+  Skills for other hobbies — armour, aircraft, ships, model rail — are welcome contributions. They follow the same `SKILL.md` format in the `skills/` folder. If you build something other than Gunpla and want to share your naming conventions, open a PR.
+</Note>

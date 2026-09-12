@@ -1,0 +1,122 @@
+---
+title: "Host plamotrack on a VPS with Caddy and Let's Encrypt"
+sidebarTitle: "VPS + Caddy"
+description: "Deploy plamotrack on a VPS using Caddy as a reverse proxy with automatic TLS certificates from Let's Encrypt. The reference production deployment for plamotrack."
+---
+
+This is the reference deployment for running plamotrack on the internet. Caddy sits on the same host as your Docker stack, terminates TLS using a free Let's Encrypt certificate, and proxies traffic to plamotrack. Only ports 80 and 443 need to be open — the stack itself stays on loopback. This is the configuration that plamotrack's deployment tests run against on every release.
+
+**Two paths to a certificate:**
+
+- **If your host is publicly reachable on ports 80 and 443:** Caddy's default HTTP challenge works with no extra configuration. Delete the `tls` block from the Caddyfile shown below. This is standard Caddy behaviour; it wasn't run through the deployment gate, but it's simpler.
+- **If it's not reachable** (e.g. sitting behind Cloudflare's proxy): use the DNS-01 challenge with Caddy's Cloudflare module. The steps below cover DNS-01, since it's the tested path. It works whether or not the host is reachable from the internet.
+
+## Install Caddy
+
+<Steps>
+  <Step title="Add the Caddy repository and install">
+    Run these commands on your Debian or Ubuntu host:
+
+    ```bash
+    sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+    sudo apt update && sudo apt install -y caddy
+    ```
+  </Step>
+  <Step title="Add the Cloudflare DNS module">
+    ```bash
+    sudo caddy add-package github.com/caddy-dns/cloudflare
+    ```
+
+    This replaces the `caddy` binary with a build from caddyserver.com that includes the Cloudflare DNS module. Skip this step if you're using the default HTTP challenge instead.
+  </Step>
+</Steps>
+
+## Create a Cloudflare API token
+
+In the Cloudflare dashboard, create an API token with **two permissions** on the zone your domain is in:
+
+- **Zone → DNS → Edit**
+- **Zone → Zone → Read**
+
+Both permissions are required. The Cloudflare DNS module reads the zone ID before editing records, and without Zone Read it fails with "an unknown error occurred". Cloudflare's built-in "Edit zone DNS" template grants exactly these two.
+
+<Warning>
+  Store the token securely — never pass it as a shell argument, which would land
+  it in your shell history and the process list. Use a root-only file and an
+  editor instead.
+</Warning>
+
+<Steps>
+  <Step title="Store the token in a root-only file">
+    ```bash
+    sudo install -m 0600 /dev/null /etc/caddy/cloudflare.env
+    sudoedit /etc/caddy/cloudflare.env
+    ```
+
+    Add exactly one line to the file:
+
+    ```ini
+    CLOUDFLARE_API_TOKEN=<the token>
+    ```
+  </Step>
+  <Step title="Hook the token into the Caddy service">
+    ```bash
+    sudo install -d /etc/systemd/system/caddy.service.d
+    sudo cp deploy/caddy/caddy.service.d/cloudflare.conf /etc/systemd/system/caddy.service.d/
+    sudo systemctl daemon-reload
+    ```
+  </Step>
+</Steps>
+
+## Configure Caddy
+
+Copy the Caddyfile from the plamotrack repo to `/etc/caddy/Caddyfile` and replace the hostname with your own:
+
+```caddyfile
+plamotrack.example {
+    reverse_proxy 127.0.0.1:8080
+    tls {
+        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    }
+}
+```
+
+Nothing else is needed. Caddy automatically obtains and renews the certificate, redirects `http://` to `https://`, passes the `Host` header through unchanged, sets `X-Forwarded-For` and `X-Forwarded-Proto`, and streams `text/event-stream` responses without buffering.
+
+There is no `log` directive — and that's intentional. A proxy access log records full request URIs. In OIDC mode those URIs include one-time authorization codes from your identity provider's callbacks. Don't add one unless you know what you're doing.
+
+## Update .env and start
+
+Add these three lines to your `.env`:
+
+```ini
+PUBLIC_BASE_URL=https://plamotrack.example
+TRUSTED_PROXIES=127.0.0.1
+# WEB_BIND stays 127.0.0.1 — Caddy is the only way in
+```
+
+Then start Caddy and bring the stack up:
+
+```bash
+sudo systemctl restart caddy
+docker compose up -d --build --wait
+```
+
+**What each line does:**
+
+- `PUBLIC_BASE_URL` tells plamotrack what address browsers see. Without it, every save from a browser returns `403 ingress.origin_not_allowed` because the `https://` origin in the request doesn't match the instance's plain-HTTP socket.
+- `TRUSTED_PROXIES=127.0.0.1` tells plamotrack to trust `X-Forwarded-For` headers from Caddy, so rate limits and the audit log see your actual visitors rather than the proxy address.
+
+## Verify
+
+From another machine, open:
+
+```
+https://plamotrack.example/api/healthz
+```
+
+You should get back `{"status":"ok"}`. Then open the app in your browser and claim the instance — run `docker compose logs api | grep -A6 "no owner yet"` to find the one-time setup token.
+
+Behind TLS, your session cookie is `Secure` and `__Host-`-prefixed. OIDC mode is also available — set `AUTH_MODE=oidc` in `.env` to sign in with Google or your own identity provider, and let Claude web and ChatGPT web connect directly without pasting a token.

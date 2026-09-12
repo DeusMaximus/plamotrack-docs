@@ -1,0 +1,140 @@
+{
+  "projectType": "saas",
+  "projectName": "plamotrack",
+  "projectDescription": "A self-hosted collection and build tracker for Gunpla and plastic model kits, with a Kanban-style pipeline, inventory management, and a built-in MCP server so you can manage your collection through Claude, ChatGPT, or any AI assistant.",
+  "theme": "almond",
+  "primaryColor": "#040404",
+  "lightColor": "#7c7c7c",
+  "darkColor": "#d3d3d3",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "first-run"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "deployment/local-and-lan",
+              "deployment/cloudflare-tunnel",
+              "deployment/vps-caddy",
+              "deployment/reverse-proxy"
+            ]
+          },
+          {
+            "group": "Authentication",
+            "pages": [
+              "authentication/overview",
+              "authentication/password-login",
+              "authentication/oidc",
+              "authentication/access-tokens"
+            ]
+          },
+          {
+            "group": "Using plamotrack",
+            "pages": [
+              "using/home-and-pipeline",
+              "using/kits-and-orders",
+              "using/inventory",
+              "using/retailers",
+              "using/import-export"
+            ]
+          },
+          {
+            "group": "AI & MCP",
+            "pages": [
+              "mcp/overview",
+              "mcp/claude-desktop",
+              "mcp/claude-web-chatgpt",
+              "mcp/mcp-tools-reference",
+              "mcp/agent-skills"
+            ]
+          },
+          {
+            "group": "Configuration & Maintenance",
+            "pages": [
+              "configuration/env-reference",
+              "configuration/backups",
+              "configuration/upgrading",
+              "configuration/troubleshooting"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Six-status build pipeline (pre-ordered → complete) with a Home dashboard showing the bench, backlog, and mail",
+    "Orders that fan out into individual kit rows — one physical kit per row, not a quantity",
+    "Four inventory catalogs (tools, consumables, upgrade parts, display gear) with low-stock thresholds",
+    "Retailer report cards with rating, packing quality, and shipping speed",
+    "Full CSV import/export with preview-before-commit and merge/replace modes",
+    "Built-in MCP server on the same process — no separate service to run",
+    "MCP OAuth for passwordless Claude web and ChatGPT web integration in OIDC mode",
+    "Password login or OpenID Connect (Google, Keycloak, Authentik) authentication",
+    "Personal access tokens with read-only or read-write scope",
+    "Four tested deployment paths: local, LAN/mesh, Cloudflare Tunnel, VPS + Caddy",
+    "Light/dark/system theme per browser",
+    "Internationalisation with locale, time zone, currency, and date-style settings"
+  ],
+  "publicApiSurface": [
+    "GET /api/kits",
+    "POST /api/kits",
+    "GET /api/kits/{id}",
+    "PATCH /api/kits/{id}",
+    "GET /api/orders",
+    "POST /api/orders",
+    "GET /api/orders/{id}",
+    "PATCH /api/orders/{id}",
+    "POST /api/orders/{id}/receive",
+    "POST /api/orders/{id}/ship",
+    "GET /api/catalog/{table}",
+    "POST /api/catalog/{table}",
+    "PATCH /api/catalog/{table}/{id}",
+    "POST /api/catalog/{table}/{id}/adjust-stock",
+    "GET /api/retailers",
+    "POST /api/retailers",
+    "PATCH /api/retailers/{id}",
+    "GET /api/summary",
+    "GET /api/settings",
+    "PATCH /api/settings",
+    "GET /api/tokens",
+    "POST /api/tokens",
+    "DELETE /api/tokens/{id}",
+    "POST /api/import/preview",
+    "POST /api/import/apply",
+    "GET /api/export",
+    "GET /api/meta",
+    "GET /api/healthz",
+    "POST /mcp/ (MCP streamable-HTTP endpoint)",
+    "MCP tool: get_meta",
+    "MCP tool: get_summary",
+    "MCP tool: list_kits",
+    "MCP tool: get_kit",
+    "MCP tool: create_kit",
+    "MCP tool: update_kit_status",
+    "MCP tool: update_kit",
+    "MCP tool: search_catalog",
+    "MCP tool: list_catalog_items",
+    "MCP tool: create_catalog_tool / _consumable / _upgrade / _display",
+    "MCP tool: update_catalog_tool / _consumable / _upgrade / _display",
+    "MCP tool: list_retailers",
+    "MCP tool: create_retailer / update_retailer",
+    "MCP tool: create_order",
+    "MCP tool: list_orders",
+    "MCP tool: get_order",
+    "MCP tool: update_order",
+    "MCP tool: mark_order_received",
+    "MCP tool: mark_order_shipped",
+    "MCP tool: adjust_stock",
+    "MCP tool: apply_upgrade",
+    "MCP tool: withdraw_upgrade_application"
+  ]
+}

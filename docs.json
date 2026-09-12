@@ -1,72 +1,85 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mintlify Starter Kit",
-  "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
-  },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "pages": [
-      {
-        "group": "Getting Started",
-        "pages": [
-          "index",
-          "quickstart"
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
+  "name": "plamotrack",
+  "theme": "almond",
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "https://media.brand.dev/06241513-71e0-4cb7-a598-fc465d30fd26.svg",
+    "dark": "https://media.brand.dev/53b25999-1371-490b-b273-00dc33388d62.svg"
+  },
+  "favicon": "https://media.brand.dev/6119e247-9849-4155-8389-d569512a4b7e.png",
+  "colors": {
+    "primary": "#040404",
+    "light": "#7c7c7c",
+    "dark": "#d3d3d3"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
     "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "type": "github",
+      "href": "https://github.com/DeusMaximus/plamotrack"
     }
   },
-  "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "first-run"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "deployment/local-and-lan",
+              "deployment/cloudflare-tunnel",
+              "deployment/vps-caddy",
+              "deployment/reverse-proxy"
+            ]
+          },
+          {
+            "group": "Authentication",
+            "pages": [
+              "authentication/overview",
+              "authentication/password-login",
+              "authentication/oidc",
+              "authentication/access-tokens"
+            ]
+          },
+          {
+            "group": "Using plamotrack",
+            "pages": [
+              "using/home-and-pipeline",
+              "using/kits-and-orders",
+              "using/inventory",
+              "using/retailers",
+              "using/import-export"
+            ]
+          },
+          {
+            "group": "AI & MCP",
+            "pages": [
+              "mcp/overview",
+              "mcp/claude-desktop",
+              "mcp/claude-web-chatgpt",
+              "mcp/mcp-tools-reference",
+              "mcp/agent-skills"
+            ]
+          },
+          {
+            "group": "Configuration & Maintenance",
+            "pages": [
+              "configuration/env-reference",
+              "configuration/backups",
+              "configuration/upgrading",
+              "configuration/troubleshooting"
+            ]
+          }
+        ]
+      }
     ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
   }
 }

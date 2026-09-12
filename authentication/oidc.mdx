@@ -1,0 +1,95 @@
+---
+title: "Sign in with Google, Keycloak, or any OIDC provider"
+sidebarTitle: "OIDC Login"
+description: "Configure plamotrack to authenticate through an OpenID Connect provider. Required for Claude web and ChatGPT OAuth-based MCP connections without pasting tokens."
+---
+
+OIDC mode replaces the password with a sign-in at an external identity provider — Google, Keycloak, Authentik, or any OpenID Connect-compatible service. It is also required if you want Claude web or ChatGPT web to connect to your MCP server without you pasting a token into them. Once configured, the account you sign in with at the provider becomes the owner of the instance — no password is ever set.
+
+<Note>
+  OIDC mode requires an `https://` URL for your plamotrack instance. You need a TLS-terminating proxy (like Caddy) or a Cloudflare Tunnel in front of the stack. See [Deployment](/deployment/vps-caddy) if you need to set that up first.
+</Note>
+
+## Choose your provider
+
+Any provider that publishes a discovery document at `<issuer>/.well-known/openid-configuration` works. Three common examples:
+
+- **Google** — issuer: `https://accounts.google.com`
+- **Keycloak** — issuer: `https://keycloak.example/realms/your-realm`
+- **Authentik** — issuer: `https://authentik.example/application/o/plamotrack/`
+
+Use the issuer URL exactly as your provider's discovery document states it. Even a trailing slash difference can cause verification to fail.
+
+## Register a client with your provider
+
+Create an OAuth/OIDC client (also called an "application") in your provider's dashboard. Configure it with these two redirect URIs:
+
+- **Browser login:** `<PUBLIC_BASE_URL>/api/auth/oidc/callback`
+- **MCP clients (Claude web, ChatGPT web):** `<PUBLIC_BASE_URL>/mcp/auth/callback`
+
+The client must be the **only audience** of the ID tokens it issues. Do not attach other clients' audience mappers to it — a token naming an additional audience is refused by plamotrack.
+
+Note down the **client ID** and **client secret** before moving on.
+
+## Update .env
+
+Add the following to your `.env` file, then restart the stack:
+
+```ini
+AUTH_MODE=oidc
+PUBLIC_BASE_URL=https://plamotrack.example   # required; must be https://
+OIDC_ISSUER=https://accounts.google.com      # your provider's issuer URL exactly as in their discovery doc
+OIDC_CLIENT_ID=your-client-id
+OIDC_CLIENT_SECRET=your-client-secret
+
+# For MCP OAuth (Claude web, ChatGPT web):
+MCP_OAUTH_SIGNING_KEY=<64 hex chars>   # run: openssl rand -hex 32
+```
+
+Then bring the stack back up:
+
+```bash
+docker compose up -d
+```
+
+## Claim the instance in OIDC mode
+
+The API still prints a one-time setup token to its log on first start, just like a fresh install. Open the app, enter the token when prompted, and plamotrack will redirect you to your identity provider. The account you sign in with at the provider becomes the owner of the instance. No password is set.
+
+If you miss the token or need a fresh one, restart the API container:
+
+```bash
+docker compose restart api
+```
+
+Then read the new token from the log:
+
+```bash
+docker compose logs api | grep -A6 "no owner yet"
+```
+
+## Switching from password to OIDC
+
+It is safe to switch an existing instance from password to OIDC. Your entire collection is untouched. On the first start in the new mode, the API signs every active browser session out and records the change in the audit log. The first sign-in at the provider with the new setup token binds that account as the owner — the old password is then ignored.
+
+Switching back to password mode (`AUTH_MODE=local`) works the same way in reverse: everyone is signed out, and you set a new password during the re-claim step.
+
+## Lost access to your provider account?
+
+If you lose access to the identity provider account bound to your instance — or you want to switch to a different provider entirely — run this from the host machine:
+
+```bash
+docker compose exec api python -m app.auth.recovery rebind-oidc
+```
+
+This command clears the bound identity, signs every active browser session out, and revokes all MCP client links made through the provider. Then restart the API and sign in with the new account:
+
+```bash
+docker compose restart api
+```
+
+Read the new setup token from the log and complete the claim as normal. Access tokens are untouched — revoke any you no longer trust from **Settings → Access tokens** once you are back in.
+
+<Note>
+  If your identity provider is temporarily unavailable, existing browser sessions and personal access tokens keep working normally. New sign-ins will fail with a clear error message until the provider comes back online. plamotrack never falls back to password mode on its own.
+</Note>

@@ -1,0 +1,56 @@
+---
+title: "plamotrack: track your Gunpla collection end to end"
+sidebarTitle: "Introduction"
+description: "plamotrack is a self-hosted kit and build tracker for Gunpla and plastic models. Track orders, inventory, and builds — and control it all from your AI assistant."
+---
+
+plamotrack is a self-hosted collection and build tracker for Gunpla and plastic model kits. It takes every kit from pre-order through to panel-lined masterpiece, counts your nippers and cement along the way, rates the shops you buy from, and — because sometimes clicking things is the worst part of the hobby — comes with a built-in MCP server so you can just tell Claude what arrived instead. Your data lives in your own Postgres, on your own hardware, and leaves as plain CSV whenever you want it. Nothing is in anyone else's cloud.
+
+<CardGroup cols={2}>
+  <Card
+    title="Install plamotrack"
+    icon="rocket"
+    href="/installation"
+  >
+    Get up and running in about three minutes with Docker.
+  </Card>
+  <Card
+    title="Connect Your AI Assistant"
+    icon="robot"
+    href="/mcp/overview"
+  >
+    Use Claude or ChatGPT to manage your collection conversationally.
+  </Card>
+  <Card
+    title="The Build Pipeline"
+    icon="kanban"
+    href="/using/home-and-pipeline"
+  >
+    Track every kit from pre-order to panel-lined masterpiece.
+  </Card>
+  <Card
+    title="Import Your Collection"
+    icon="file-import"
+    href="/using/import-export"
+  >
+    Bring in your spreadsheet or existing collection in minutes.
+  </Card>
+</CardGroup>
+
+## What plamotrack tracks
+
+plamotrack is built around five interconnected pillars, each designed around how hobbyists actually think about their collections.
+
+**Kits & Build Pipeline.** Every kit moves through six statuses — pre-ordered, ordered, in transit, backlog, building, complete — and the Home dashboard reads them the way a Sunday afternoon does. The bench shows what you're actively building with start dates and a day counter; the backlog and recently completed sections give you the true count at a glance; and "in the mail" shows every order still in flight with retailer, carrier, and tracking number.
+
+**Orders.** When you order a Zaku ×2, plamotrack creates two kit rows, because you own two physical plastic objects. Each one remembers which order it came from. Orders move through their own stages — pending, shipped, received — and stock only lands in your inventory when the box actually arrives. No more being told you have five Gundam markers while they're demonstrably still in Osaka.
+
+**Inventory.** Four quantity-tracked catalogs cover tools, consumables, upgrades, and display gear. Consumables support an optional low-stock threshold so you find out you're nearly out of Extra Thin *before* the hobby shop closes. Upgrade parts can be applied to a specific kit, which decrements stock and records what went where. A search-and-pick typeahead prevents the same item from being entered three different ways.
+
+**Retailers.** Every shop you buy from gets a report card: rating, packing quality, shipping speed, and a blunt would-you-order-again field. Because six months later, you will not remember which one sent a Perfect Grade loose in a bag.
+
+**Data portability.** Export your entire collection as a zip of plain CSVs, or pull any single table as a spreadsheet. Import it back to restore, merge, or move instances — with a full preview of every change before anything is written. Coming from a spreadsheet or Notion? The starter sheet imports one row per kit and works out the retailers, orders, and order lines for you.
+
+<Note>
+  plamotrack is currently in public alpha. Your data is yours and migrations are tested in both directions, but export a backup before upgrading. It takes one click — that's exactly why it exists.
+</Note>

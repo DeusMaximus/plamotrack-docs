@@ -1,0 +1,78 @@
+---
+title: "Upgrade plamotrack to a new version"
+sidebarTitle: "Upgrading"
+description: "How to upgrade plamotrack: pull the latest code, rebuild containers, and let migrations run automatically. Includes version-specific notes for 0.4.0 and 0.3.0."
+---
+
+Upgrading plamotrack is a two-command process. Database migrations run automatically before the API starts — there's no separate step. Always export a backup first.
+
+## Standard upgrade
+
+```bash
+git pull
+docker compose up -d --build --wait
+```
+
+That's it. The `migrate` container applies any new migrations before the API starts. If a migration fails, the API won't start and you'll get a readable error rather than a half-migrated database serving traffic. Check migration output with:
+
+```bash
+docker compose logs migrate
+```
+
+<Warning>
+  Back up before upgrading. Use the `pg_dump` method or export a CSV archive from Settings first. See [Backups](/configuration/backups).
+</Warning>
+
+## Upgrading to 0.4.0
+
+No schema migration, no authentication change, no new setting. Run `git pull && docker compose up -d --build --wait` and sign in as before.
+
+What changed for API clients: every order row now carries a derived `stage` field (`received`, `in_transit`, `pre_ordered`, `ordered`). The `GET /summary` endpoint and `get_summary` MCP tool are new. The kit and order list endpoints and tools accept `sort` and `limit` parameters. The `/board` route redirects to `/`. Bookmarks to the Orders page using the old query values (`?status=pending|pre-order|shipped`) will read as no filter — update them to the current wire values (`ordered`, `pre_ordered`, `in_transit`, `received`).
+
+Rolling back is `git checkout v0.3.0-alpha` followed by the same `up` command — the database needs no changes.
+
+## Upgrading to 0.3.0
+
+This release added authentication. After upgrading, your instance starts **unclaimed** — even if you had data before. The four new migrations only add the authentication tables; your collection is untouched.
+
+<Steps>
+  <Step title="Back up first">
+    Take a database dump and save your `.env`. See [Backups](/configuration/backups).
+  </Step>
+  <Step title="Check your host settings">
+    If you reach the instance by anything other than `localhost`, make sure `ALLOWED_HOSTS` names it in `.env`. If you're behind a TLS proxy, set `PUBLIC_BASE_URL` to the `https://` address in the browser's bar.
+  </Step>
+  <Step title="Pull and rebuild">
+    ```bash
+    git pull && docker compose up -d --build --wait
+    ```
+  </Step>
+  <Step title="Claim the instance">
+    Read the one-time setup token from the API log:
+
+    ```bash
+    docker compose logs api | grep -A6 "no owner yet"
+    ```
+
+    Open the instance in your browser, enter the token, and choose your owner password.
+  </Step>
+  <Step title="Create access tokens for scripts and MCP clients">
+    Every script or MCP client that was pointing at `/mcp/` now requires an `Authorization: Bearer ptk_…` header. Go to **Settings → Access tokens** and mint one for each client. The README's *Wiring up the MCP server* section has the exact configuration snippets.
+  </Step>
+</Steps>
+
+## Upgrading to 0.2.10
+
+This release added host allowlisting. If you reach the instance by anything other than `localhost` or `127.0.0.1` — a LAN hostname, a container name, a mesh DNS name — add that name to `ALLOWED_HOSTS` in `.env` **before** running `docker compose up`.
+
+If you forget, you'll get `421 Misdirected Request` after the upgrade. Add the name to `ALLOWED_HOSTS` and run `docker compose up -d` again. Nothing is lost.
+
+## If the upgrade fails
+
+Check the migration logs first:
+
+```bash
+docker compose logs migrate
+```
+
+If you need to roll back, restore your pre-upgrade backup. See [Backups](/configuration/backups) for the restore procedure.

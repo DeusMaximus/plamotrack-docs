@@ -1,0 +1,59 @@
+---
+title: "Track your tools, paints, and supplies in plamotrack"
+sidebarTitle: "Inventory"
+description: "plamotrack tracks four types of inventory: tools, consumables, upgrade parts, and display gear. Set low-stock alerts on consumables and record which upgrade parts went on which kit."
+---
+
+plamotrack tracks four separate inventory catalogs so you know what you have, what you're running low on, and what you've applied to builds. Each catalog is shaped for a different kind of item — the rules that make sense for a pot of cement are different from the rules for an action base.
+
+## The four catalogs
+
+<CardGroup cols={2}>
+  <Card title="Tools" icon="wrench">
+    Nippers, scribers, panel-lining pens, sanding sticks. Counted but not consumed — your Godhand isn't going anywhere.
+  </Card>
+  <Card title="Consumables" icon="flask">
+    Paints, cement, decal softener, sandpaper. Can carry a low-stock threshold — plamotrack warns you when you're nearly out before the hobby shop closes.
+  </Card>
+  <Card title="Upgrade Parts" icon="puzzle-piece">
+    Aftermarket details, resin parts, photo-etch. Can be applied to a specific kit, which decrements stock and records what went where.
+  </Card>
+  <Card title="Display Gear" icon="display">
+    Action bases, system stands, diorama scenery. Counted and categorised, but deliberately **not** linked to specific kits — a stand under one model this week is under another next week.
+  </Card>
+</CardGroup>
+
+## Adding items
+
+Use the search-and-pick typeahead when adding items to an order or catalog — don't type names freehand.
+
+This is intentional. Give a naming-things-at-11pm hobbyist a free text field and within a month you'll own "GM02 Gundam Marker", "Gundam Marker GM02", and "gm02 marker" as three separate stock entries. The typeahead matches against your existing catalog names and keeps everything consistent.
+
+If the item genuinely doesn't exist in your catalog yet, the typeahead lets you create it with a proper name, then and there.
+
+## Low-stock thresholds
+
+On any consumable, set an optional low-stock threshold. When your on-hand quantity drops to or below that number, plamotrack highlights the item in your inventory list. You see the warning while you still have time to order more — not when you're uncapping a bottle that's already dry.
+
+To set a threshold, open the consumable's edit dialog and enter a number in the **Low-stock threshold** field. Leave it blank for items you're not tracking closely.
+
+## Applying upgrade parts
+
+When an aftermarket part goes on a build, record it:
+
+1. Open the kit's edit dialog (from any list page or card), or navigate to the upgrade part in the inventory page.
+2. Click **Apply to kit** and select the kit.
+
+This decrements the part's stock by 1 and records which kit it went on and when. You now have a complete record of what went where.
+
+To undo this, use **Withdraw application**. plamotrack asks whether the part goes back into stock — useful if you decided against a detail-up or pulled a part from a scrapped build.
+
+## Orders and stock
+
+Stock only changes when an order is **marked received**. A pending order for Tamiya Extra Thin shows that a bottle is on the way, but it doesn't count as on-hand until the box arrives and you click **Mark received**.
+
+This is why the inventory page can show 0 on hand for something you ordered last week — look at your In Transit orders, and it'll be there.
+
+<Tip>
+  Scale and category on display gear let you filter your stock meaningfully. "All my 1/144 action bases" is an answerable question — as long as you fill in the scale when you add the item.
+</Tip>

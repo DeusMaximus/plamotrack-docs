@@ -1,0 +1,74 @@
+---
+title: "Connect Claude.ai or ChatGPT to plamotrack via OAuth"
+sidebarTitle: "Claude Web & ChatGPT"
+description: "Connect the Claude.ai or ChatGPT web apps to plamotrack's MCP server using OAuth sign-in. Requires OIDC mode and a publicly reachable HTTPS instance."
+---
+
+Claude.ai and ChatGPT on the web can connect to plamotrack as a custom connector — without you pasting a token. Instead, they use OAuth: you're redirected to sign in at your identity provider (Google, Keycloak, Authentik, etc.) and the client receives its own access tokens. This requires OIDC mode and a public HTTPS URL.
+
+## Requirements
+
+Before you connect Claude.ai or ChatGPT, make sure all of these are in place:
+
+- plamotrack running in OIDC mode (`AUTH_MODE=oidc`) — see [OIDC Login](/authentication/oidc)
+- TLS in front of your instance, with `PUBLIC_BASE_URL` set to an `https://` address — see [VPS + Caddy](/deployment/vps-caddy) or [Cloudflare Tunnel](/deployment/cloudflare-tunnel)
+- `MCP_OAUTH_SIGNING_KEY` set in `.env` (generate one with `openssl rand -hex 32`)
+- Your OIDC provider client configured with a second redirect URI: `<PUBLIC_BASE_URL>/mcp/auth/callback`
+
+## Connecting Claude.ai
+
+<Steps>
+  <Step title="Open Integrations in Claude.ai">
+    In Claude.ai, go to **Settings → Integrations** (or the custom connector section, depending on your plan).
+  </Step>
+
+  <Step title="Add the connector URL">
+    Add a new connector and enter your plamotrack MCP endpoint:
+
+    ```
+    https://your-instance.example/mcp/
+    ```
+  </Step>
+
+  <Step title="Let Claude discover your instance">
+    Claude.ai discovers your instance as an OAuth server and redirects you to sign in.
+  </Step>
+
+  <Step title="Sign in at your identity provider">
+    Sign in at your identity provider — for example, Google. Only your owner account is accepted; any other account is refused before a token is issued.
+  </Step>
+
+  <Step title="Done">
+    Claude.ai receives its own access token and stores it. There's nothing to paste or keep track of.
+  </Step>
+</Steps>
+
+## Connecting ChatGPT
+
+Follow the same steps, starting from **Settings → Connectors** in ChatGPT, and enter the same connector URL (`https://your-instance.example/mcp/`). The sign-in flow is identical.
+
+## What access does the connected client get?
+
+Each connected client gets read and write access to your collection — the same as a read-and-write personal access token. It can log orders, move kits, adjust stock, and look up anything in your collection.
+
+It cannot change instance settings, run a replace-all import, or manage access tokens. Those stay with your browser session and are never exposed to a connected client.
+
+## Removing a connected client
+
+To disconnect a client, revoke its access in your identity provider's settings — go to the provider's connected apps or authorised clients page and remove the plamotrack entry.
+
+To revoke all OAuth-linked MCP clients at once, run this from your server:
+
+```bash
+docker compose exec api python -m app.auth.recovery rebind-oidc
+```
+
+This clears every MCP grant and, best effort, revokes the provider's refresh tokens behind them. Your collection data, browser session, and personal access tokens are untouched. Any client that was linked can sign in again once you've reclaimed the instance.
+
+<Note>
+  Personal access tokens still work in OIDC mode. If you also use Claude Desktop with a token, it keeps working exactly as before — you don't need to change its configuration.
+</Note>
+
+<Note>
+  Gemini Spark and other AI assistants that support MCP OAuth should work the same way — add the connector URL `https://your-instance.example/mcp/` in their settings and sign in when prompted.
+</Note>

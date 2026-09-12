@@ -1,0 +1,123 @@
+---
+title: "Troubleshoot common plamotrack issues"
+sidebarTitle: "Troubleshooting"
+description: "Fixes for the most common plamotrack issues: 421 errors, 403 on saves, password problems, port conflicts, migration failures, and MCP connection issues."
+---
+
+Most plamotrack issues fall into a handful of categories. This page covers the most common ones with the quickest fixes.
+
+<Accordion title="421 Misdirected Request">
+  You're reaching the instance by a name it doesn't know. Add the name to `ALLOWED_HOSTS` in `.env` (or set `PUBLIC_BASE_URL` if you're behind a proxy), then run:
+
+  ```bash
+  docker compose up -d
+  ```
+
+  Nothing is written or lost while the setting is wrong — fix the line and restart.
+</Accordion>
+
+<Accordion title="403 on saves (ingress.origin_not_allowed)">
+  You're behind an HTTPS proxy or Cloudflare Tunnel but haven't set `PUBLIC_BASE_URL` in `.env` to your `https://` address. Set it, then run:
+
+  ```bash
+  docker compose up -d
+  ```
+
+  Reads still work; only writes are blocked until this is set.
+</Accordion>
+
+<Accordion title="up --wait fails or hangs">
+  Run `docker compose ps` to find the unhealthy service. If it's `migrate`, check its output:
+
+  ```bash
+  docker compose logs migrate
+  ```
+
+  The API deliberately won't start if migrations fail, so a stopped deploy here means your database is still intact.
+</Accordion>
+
+<Accordion title="Port 8080 already in use">
+  Set `WEB_PORT` in `.env` to any free port (e.g. `9090`), then restart:
+
+  ```bash
+  docker compose up -d
+  ```
+</Accordion>
+
+<Accordion title="POSTGRES_PASSWORD error from Compose">
+  You skipped the `cp .env.example .env` step during installation. Create the file first:
+
+  ```bash
+  cp .env.example .env
+  ```
+
+  Then open `.env`, replace `change-me` with a real password, and run `docker compose up -d --build --wait`.
+</Accordion>
+
+<Accordion title="password authentication failed (database)">
+  You changed `POSTGRES_PASSWORD` in `.env` after the database was already created. Postgres only reads that value when it initialises an empty data directory — it does not update on restart.
+
+  You have two options:
+
+  - **Set it back** to the original value and restart.
+  - **Start fresh**: run `docker compose down -v` (this **deletes the database**), then restore from a backup. See [Backups](/configuration/backups).
+</Accordion>
+
+<Accordion title="Forgot the owner password">
+  Reset it from inside the API container — this never goes over the network:
+
+  ```bash
+  docker compose exec api python -m app.auth.recovery reset-password
+  ```
+
+  It prompts for a new password, sets it, and signs all browsers out. Access tokens are not affected — revoke any you no longer trust from Settings once you're back in.
+</Accordion>
+
+<Accordion title="MCP client connects but hangs">
+  Make sure you're using the URL with a trailing slash (`/mcp/` not `/mcp`).
+
+  If you have a proxy in front of plamotrack, check that it has response buffering disabled for the MCP endpoint and doesn't impose a short read timeout. MCP is a streaming protocol — a buffering proxy holds the response instead of passing it on, and the client hangs silently. The bundled nginx configuration in `frontend/nginx/default.conf.template` is a working reference for the correct settings.
+</Accordion>
+
+<Accordion title="524 from Cloudflare on a large import">
+  Cloudflare's 125-second timeout fired on a large, slow request before the response headers arrived. The import still completed on the server — check plamotrack to confirm. MCP and other streaming requests are unaffected by this timeout.
+</Accordion>
+
+<Accordion title="Every visitor is being rate-limited as one person">
+  Your proxy or Cloudflare connector isn't listed in `TRUSTED_PROXIES` in `.env`, so every visitor appears to arrive from the proxy's address. Add the proxy's IP and restart:
+
+  ```bash
+  docker compose up -d
+  ```
+
+  Use `127.0.0.1` for a proxy on the same host, or the proxy's own IP if it's on another machine.
+</Accordion>
+
+<Accordion title="The UI loads but all data shows errors in the browser console">
+  The API isn't ready yet. Check the container status and logs:
+
+  ```bash
+  docker compose ps
+  docker compose logs api
+  ```
+</Accordion>
+
+<Accordion title="Caddy certificate errors">
+  Run `journalctl -u caddy` to see the full error.
+
+  - **DNS-01 challenge**: verify the Cloudflare API token has **both** Zone → DNS → Edit **and** Zone → Zone → Read permissions on the correct zone. Missing Zone → Zone → Read causes an "unknown error" when the module tries to look up the zone ID.
+  - **HTTP challenge**: make sure ports 80 and 443 are reachable from the internet under your domain name, and that the domain resolves to this host.
+</Accordion>
+
+<Accordion title="502 Bad Gateway from Caddy">
+  The Docker stack isn't running, or `WEB_BIND` isn't `127.0.0.1`. Check the stack status and test the connection locally:
+
+  ```bash
+  docker compose ps
+  curl http://127.0.0.1:8080/api/healthz
+  ```
+</Accordion>
+
+## Still stuck?
+
+Check the [GitHub Issues](https://github.com/DeusMaximus/plamotrack/issues) page — someone may have hit the same problem. If not, open a new issue with your error output and the relevant parts of your `.env` (redact any passwords or secrets).

@@ -1,0 +1,77 @@
+---
+title: "Expose plamotrack to the internet with a Cloudflare Tunnel"
+sidebarTitle: "Cloudflare Tunnel"
+description: "Use a Cloudflare Tunnel to make plamotrack available anywhere without opening ports. Includes HTTPS, MCP OAuth support, and configuration for Claude web and ChatGPT."
+---
+
+A Cloudflare Tunnel works by connecting outward — the `cloudflared` connector on your machine reaches out to Cloudflare's network, so nothing on your side is directly reachable from the internet. Cloudflare terminates TLS for you at their edge and forwards traffic through the tunnel to your instance. No open firewall ports, no certificate management. This is one of the two tested deployment methods for exposing plamotrack to the internet.
+
+## Prerequisites
+
+- A Cloudflare account with a domain managed by Cloudflare DNS
+- `cloudflared` installed — see [Cloudflare's getting started guide](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/)
+
+The `cloudflared` connector can run on the same host as your plamotrack stack or on a separate machine — both configurations work.
+
+## Set up the tunnel route
+
+<Steps>
+  <Step title="Open Zero Trust Dashboard">
+    In the Cloudflare dashboard, go to **Zero Trust → Networks → Tunnels**. Select your tunnel (or create one if you haven't yet).
+  </Step>
+  <Step title="Add a public hostname">
+    Add a **public hostname** route to your tunnel:
+    - **Hostname:** the domain you want plamotrack at (e.g. `plamotrack.example.com`)
+    - **Service type:** HTTP
+    - **URL:** the address the connector uses to reach your instance — `http://127.0.0.1:8080` if the connector is on the same machine, or the LAN address of the host if it's on a different machine
+  </Step>
+</Steps>
+
+## Update your .env
+
+Add or edit these three lines in your `.env`:
+
+```ini
+WEB_BIND=127.0.0.1              # keep it on loopback
+PUBLIC_BASE_URL=https://plamotrack.example
+TRUSTED_PROXIES=127.0.0.1       # the connector's address; use its IP if it's on another machine
+```
+
+Then bring the stack back up:
+
+```bash
+docker compose up -d
+```
+
+**What each line does:**
+
+- `WEB_BIND=127.0.0.1` keeps the port closed to everything except the local connector. Cloudflare is the only way in.
+- `PUBLIC_BASE_URL` tells plamotrack what address browsers see. Without this, every save from the browser returns a `403 ingress.origin_not_allowed` error because the browser's `https://` origin doesn't match the instance's plain-HTTP socket.
+- `TRUSTED_PROXIES` tells plamotrack to trust `X-Forwarded-For` headers from the connector, so rate limits and the audit log see your actual visitors rather than the connector's address.
+
+`PUBLIC_BASE_URL`'s host is automatically added to the allowed-hosts list, so you don't need to set `ALLOWED_HOSTS` separately for the public name.
+
+## Verify it works
+
+From any device, open:
+
+```
+https://plamotrack.example/api/healthz
+```
+
+You should get back `{"status":"ok"}`. Then open the app in your browser and claim the instance if you haven't already — run `docker compose logs api | grep -A6 "no owner yet"` to find the setup token.
+
+## MCP and AI assistants
+
+Once plamotrack is behind TLS with `PUBLIC_BASE_URL` set, you can connect Claude web and ChatGPT web directly from their connector dialogs — just paste `https://plamotrack.example/mcp/` as the MCP URL.
+
+In [OIDC Login](/authentication/oidc) mode (`AUTH_MODE=oidc`), Claude web and ChatGPT web can sign in without you pasting a token: they discover the instance as an OAuth server, send you to your identity provider, and receive their own access tokens. Personal access tokens continue to work in this mode too.
+
+<Note>
+  Cloudflare enforces a 125-second limit on the time to a response's first
+  headers. A very large CSV import that takes over 125 seconds to respond will
+  produce a Cloudflare `524` error in your browser — but the import still
+  completes on the server. MCP is a streaming protocol (`text/event-stream`),
+  which the tunnel handles without that limit, so all AI assistant connections
+  are unaffected.
+</Note>

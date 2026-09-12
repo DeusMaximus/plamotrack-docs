@@ -1,0 +1,72 @@
+---
+title: "Claim your plamotrack instance on first run"
+sidebarTitle: "First Run"
+description: "After installing, your plamotrack instance is unclaimed. Follow these steps to retrieve the one-time setup token and set your owner password."
+---
+
+When plamotrack starts for the first time, it's unclaimed — every page shows a setup screen and all collection data requires sign-in. You claim it once by providing a one-time setup token (printed in the API log) and choosing a password. After that, you're in and the setup screen is gone for good.
+
+<Steps>
+  <Step title="Get the setup token">
+    Run the following command to find the token in the API log:
+
+    ```bash
+    docker compose logs api | grep -A6 "no owner yet"
+    ```
+
+    Copy the token from the output. It looks like a long random string.
+
+    <Tip>
+      The token is regenerated every time the API container starts while the instance is unclaimed. If you lose it or the output scrolled past, run `docker compose restart api` and check the logs again — a fresh token will be printed.
+    </Tip>
+  </Step>
+
+  <Step title="Open the setup screen">
+    Navigate to [http://localhost:8080](http://localhost:8080) (or your instance's URL if you changed the port or host). You should see the setup form — it will be visible on every page until you claim the instance.
+  </Step>
+
+  <Step title="Enter the token and choose a password">
+    Paste the setup token into the token field, then choose the owner password you want to use going forward. Submit the form to create your account.
+
+    The token is single-use. Once you claim the instance, it won't be printed to the log again and the setup screen disappears.
+  </Step>
+
+  <Step title="Sign in">
+    You're now the owner. The app opens to the Home page with an empty collection — that's completely normal. Time to add some kits.
+  </Step>
+</Steps>
+
+## Getting your first kits in
+
+There are two good ways to populate a fresh collection. Pick whichever fits your situation:
+
+<CardGroup cols={2}>
+  <Card
+    title="Add an order"
+    icon="plus"
+    href="/using/kits-and-orders"
+  >
+    Record a new purchase and the kits in it.
+  </Card>
+  <Card
+    title="Import from a spreadsheet"
+    icon="file-import"
+    href="/using/import-export"
+  >
+    Use the starter sheet to bulk-import your existing collection.
+  </Card>
+</CardGroup>
+
+## Forgot your password?
+
+If you get locked out, reset your password from inside the API container — never over the network:
+
+```bash
+docker compose exec api python -m app.auth.recovery reset-password
+```
+
+The command prompts for a new password, sets it immediately, and signs every active browser session out. You'll need shell access to the host machine to run it. For more details on recovery options and rate limiting, see the [Authentication](/authentication) section.
+
+<Note>
+  If you'd prefer to sign in with Google or another identity provider instead of a password, see [OIDC / Identity Provider Login](/authentication/oidc). You can switch modes at any time — it's a single line in `.env`.
+</Note>

@@ -1,0 +1,68 @@
+---
+title: "Create and use personal access tokens in plamotrack"
+sidebarTitle: "Access Tokens"
+description: "Personal access tokens let scripts, the REST API, and MCP clients like Claude Desktop authenticate with plamotrack without using your browser session."
+---
+
+Personal access tokens are for anything that isn't a human in a browser — scripts, the REST API, Claude Desktop, Claude Code, and any other MCP client that sends HTTP headers. Your browser session is never used by these clients; they always need a token. Tokens are created in the app, shown once, and can be revoked at any time from the same place.
+
+## Creating a token
+
+<Steps>
+  <Step title="Open Access tokens in Settings">
+    Sign in to plamotrack and go to **Settings → Access tokens**.
+  </Step>
+  <Step title="Click New token">
+    Click **New token**. Give it a descriptive name so you can identify it later — for example, "Claude Desktop", "backup script", or "Claude Code".
+  </Step>
+  <Step title="Choose a permission level">
+    Select the level of access the token needs:
+
+    - **Read-only** — can list and view kits, orders, inventory, retailers, and settings. Enough for an agent that just looks things up.
+    - **Read and write** — can also add and edit kits and orders, adjust stock, and import in merge or add-only mode.
+
+    Choose the least permissive level that works for your use case. You can always revoke a token and create a new one with a different level.
+  </Step>
+  <Step title="Set an optional expiry">
+    Optionally choose an expiry — 30, 90, or 365 days. Leave it unset for a token that never expires, or set one if you want automatic cleanup for short-lived use cases.
+  </Step>
+  <Step title="Copy the token">
+    Click **Create**. Copy the token now — it is shown **once only** and looks like `ptk_<id>_<secret>`. Paste it directly into your MCP client config or store it in your password manager. If you lose it, you'll need to revoke it and create a new one.
+  </Step>
+</Steps>
+
+## Using a token
+
+Pass the token as a Bearer token in the `Authorization` header on every request:
+
+```http
+Authorization: Bearer ptk_your_token_here
+```
+
+This works on both the REST API (`/api/…`) and the MCP endpoint (`/mcp/`). Every MCP client and script should send this header — there is no cookie-based fallback.
+
+<Warning>
+  Never put the token in a URL (for example, `?token=…`). URLs are recorded in server logs — both nginx's and the API's. Always use the `Authorization` header.
+</Warning>
+
+## What a token can't do
+
+Regardless of permission level, no token can:
+
+- Change instance settings
+- Run a replace-all import
+- Manage (create, view, or revoke) other tokens
+
+These actions require your owner browser session. This means a leaked token cannot lock you out or erase your collection.
+
+## Revoking a token
+
+Go to **Settings → Access tokens**, find the token, and click **Revoke**. Revocation is immediate — the token stops working the moment you click. The row stays in the list as an audit record. Minting, revoking, and any attempt to use a revoked token are all logged.
+
+## Checking token usage
+
+The token list shows when each token was last used. Check this periodically to spot tokens you no longer need, or to confirm that a client is connecting successfully.
+
+<Tip>
+  Create separate tokens for different uses — one for Claude Desktop, one for Claude Code, one for your backup script. That way you can revoke just one if it leaks or you retire a client, without affecting anything else.
+</Tip>

@@ -1,0 +1,72 @@
+---
+title: "Use plamotrack behind your own reverse proxy"
+sidebarTitle: "Reverse Proxy"
+description: "Run plamotrack behind nginx, Traefik, nginx Proxy Manager, or any TLS proxy. Requirements and configuration checklist for a working, secure setup."
+---
+
+If you already run a reverse proxy — nginx, Traefik, nginx Proxy Manager, Zoraxy, Apache, or anything else — you can put plamotrack behind it. Only Caddy on the same host ([VPS + Caddy](/deployment/vps-caddy)) is the tested reference deployment, but any proxy that meets the requirements below works. Meet the contract and plamotrack won't know the difference.
+
+## Requirements
+
+Your proxy must do all four of these things:
+
+<Steps>
+  <Step title="Pass the Host header unchanged">
+    Do not rewrite the `Host` header. Set `PUBLIC_BASE_URL` in `.env` to the `https://` address your users see in their browser bar.
+
+    Without this, every browser save returns `403 ingress.origin_not_allowed`. The browser sends an `Origin` header with the `https://` scheme, but the instance's socket is plain HTTP — without `PUBLIC_BASE_URL` those don't match and plamotrack rejects the write. Reads and logins still work; only writes fail. Fix it by setting the line, then `docker compose up -d`. Nothing is lost.
+  </Step>
+  <Step title="Set X-Forwarded-For">
+    Set the `X-Forwarded-For` header, and add the proxy's address to `TRUSTED_PROXIES` in `.env`. Use `127.0.0.1` if the proxy is on the same host; use the proxy's own IP if it's on a different machine.
+
+    Without this, plamotrack sees the proxy's address as the source of every request. Rate limits and the audit log key on that one address instead of your real visitors — a degradation, not a security hole, but it makes the audit log useless and can trigger rate limits for all users at once.
+  </Step>
+  <Step title="Don't buffer text/event-stream, and don't set a short timeout on /mcp">
+    MCP is a streaming protocol. A proxy that buffers `text/event-stream` responses holds the entire response body before forwarding it, which causes the AI client to hang silently — no error, no output, just nothing. A short read timeout on `/mcp` has the same effect.
+
+    Disable response buffering for the MCP path and set a generous read and send timeout (an hour is not unreasonable). See `frontend/nginx/default.conf.template` in the plamotrack repo for a working reference configuration — buffering off, an hour's timeout, and the `Connection` hop-by-hop header cleared.
+  </Step>
+  <Step title="Keep WEB_BIND on 127.0.0.1">
+    If the proxy is on the same host, keep `WEB_BIND` at its default of `127.0.0.1`. The proxy should be the only way into the stack — not a firewall rule, not a Docker network configuration, but the bind address itself.
+
+    A proxy on a different machine reaches the instance at its LAN or mesh address; in that case set `WEB_BIND` to that address and keep it off the public internet.
+  </Step>
+</Steps>
+
+## Minimum .env settings
+
+At minimum, add these two lines to your `.env`:
+
+```ini
+PUBLIC_BASE_URL=https://plamotrack.example
+TRUSTED_PROXIES=127.0.0.1   # or the proxy's IP if it's on another machine
+```
+
+Then run `docker compose up -d`.
+
+## MCP streaming configuration
+
+The `/mcp/` path needs special attention in any proxy configuration:
+
+- **Buffering off** — the proxy must not buffer `text/event-stream` responses
+- **Generous timeouts** — the MCP connection stays open while an AI client is working; a 30- or 60-second read timeout will cut it off mid-session
+- **`Connection` header cleared** — hop-by-hop headers should not be forwarded
+
+For a concrete working example, see `frontend/nginx/default.conf.template` in the plamotrack repo. It's the bundled ingress configuration, and it handles all three of these correctly.
+
+<Note>
+  If you reach the instance by an internal name that differs from the public
+  hostname in `PUBLIC_BASE_URL` — for example, a container name or a local
+  alias — add that internal name to `ALLOWED_HOSTS` in `.env` as well.
+  Otherwise plamotrack returns `421 Misdirected Request` for requests arriving
+  with that `Host` header. Nothing is lost while it's wrong: add the name and
+  run `docker compose up -d`.
+</Note>
+
+<Warning>
+  Do **not** publish the internal `api:8000` port directly. The `web` container
+  (nginx) is part of plamotrack's security model: it enforces route separation,
+  default-deny on unlisted paths, and the per-client rate limits. The API
+  container assumes nginx is its peer and does not replicate those controls on
+  its own. All published traffic must go through the ingress.
+</Warning>
