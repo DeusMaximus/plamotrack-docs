@@ -55,15 +55,9 @@ It cannot change instance settings, run a replace-all import, or manage access t
 
 ## Removing a connected client
 
-To disconnect a client, revoke its access in your identity provider's settings — go to the provider's connected apps or authorised clients page and remove the plamotrack entry.
+To disconnect a client, revoke its access in your identity provider's settings — go to the provider's connected apps or authorised clients page and remove the plamotrack entry. The client's access ends the next time it tries to refresh its token.
 
-To revoke all OAuth-linked MCP clients at once, run this from your server:
-
-```bash
-docker compose exec api python -m app.auth.recovery rebind-oidc
-```
-
-This clears every MCP grant and, best effort, revokes the provider's refresh tokens behind them. Your collection data, browser session, and personal access tokens are untouched. Any client that was linked can sign in again once you've reclaimed the instance.
+To revoke all OAuth-linked MCP clients at once — for example, if you're changing identity providers — use the **rebind-oidc** recovery command described in the [operations guide](/deployment/vps-caddy). This clears every MCP grant and, best effort, revokes the provider's refresh tokens behind them. Your collection data, browser session, and personal access tokens are untouched. Any client that was linked can sign in again once you've reclaimed the instance.
 
 <Note>
   Personal access tokens still work in OIDC mode. If you also use Claude Desktop with a token, it keeps working exactly as before — you don't need to change its configuration.

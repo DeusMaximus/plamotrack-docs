@@ -1,14 +1,14 @@
 ---
 title: "Host plamotrack on a VPS with Caddy and Let's Encrypt"
 sidebarTitle: "VPS + Caddy"
-description: "Deploy plamotrack on a VPS using Caddy as a reverse proxy with automatic TLS certificates from Let's Encrypt. The reference production deployment for plamotrack."
+description: "Host plamotrack on a VPS with Caddy and Let's Encrypt TLS. Covers DNS-01 via Cloudflare, Caddyfile setup, and the reference .env configuration."
 ---
 
-This is the reference deployment for running plamotrack on the internet. Caddy sits on the same host as your Docker stack, terminates TLS using a free Let's Encrypt certificate, and proxies traffic to plamotrack. Only ports 80 and 443 need to be open — the stack itself stays on loopback. This is the configuration that plamotrack's deployment tests run against on every release.
+This is the reference deployment for running plamotrack on the internet. Caddy sits on the same host as your Docker stack, terminates TLS using a free Let's Encrypt certificate, and proxies traffic to plamotrack. Only ports 80 and 443 need to be open — the stack itself stays on loopback. This is the reference configuration — the most thoroughly tested way to run plamotrack on the internet.
 
 **Two paths to a certificate:**
 
-- **If your host is publicly reachable on ports 80 and 443:** Caddy's default HTTP challenge works with no extra configuration. Delete the `tls` block from the Caddyfile shown below. This is standard Caddy behaviour; it wasn't run through the deployment gate, but it's simpler.
+- **If your host is publicly reachable on ports 80 and 443:** Caddy's default HTTP challenge works with no extra configuration. Delete the `tls` block from the Caddyfile shown below. This is standard Caddy behaviour and simpler to set up, though it requires your server to be publicly reachable on those ports.
 - **If it's not reachable** (e.g. sitting behind Cloudflare's proxy): use the DNS-01 challenge with Caddy's Cloudflare module. The steps below cover DNS-01, since it's the tested path. It works whether or not the host is reachable from the internet.
 
 ## Install Caddy

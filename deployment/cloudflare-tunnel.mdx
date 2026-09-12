@@ -1,7 +1,7 @@
 ---
 title: "Expose plamotrack to the internet with a Cloudflare Tunnel"
 sidebarTitle: "Cloudflare Tunnel"
-description: "Use a Cloudflare Tunnel to make plamotrack available anywhere without opening ports. Includes HTTPS, MCP OAuth support, and configuration for Claude web and ChatGPT."
+description: "Publish plamotrack without opening ports using Cloudflare Tunnel. Covers setup, HTTPS, OIDC login, and connecting Claude web or ChatGPT as MCP clients."
 ---
 
 A Cloudflare Tunnel works by connecting outward — the `cloudflared` connector on your machine reaches out to Cloudflare's network, so nothing on your side is directly reachable from the internet. Cloudflare terminates TLS for you at their edge and forwards traffic through the tunnel to your instance. No open firewall ports, no certificate management. This is one of the two tested deployment methods for exposing plamotrack to the internet.

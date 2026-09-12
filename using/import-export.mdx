@@ -1,7 +1,7 @@
 ---
 title: "Import and export your collection data in plamotrack"
 sidebarTitle: "Import & Export"
-description: "Export your entire collection as a ZIP of CSVs, import it back to restore or merge, and use the starter sheet to bring in an existing spreadsheet with one row per kit."
+description: "Export your collection as plain CSVs and import back to restore or merge. The starter sheet is the fastest path in from a spreadsheet, one row per kit."
 ---
 
 Your collection data is always yours. Export it as a ZIP of plain CSVs, import it back at any time, or move it to a new instance. Every import shows you a full preview of what will change before anything is written — nothing is committed until you click **Apply**.
@@ -36,6 +36,8 @@ If you're coming from a spreadsheet, Notion, or Baserow, the **starter sheet** i
     | `order_date` | The purchase date |
     | `order_number` | The shop's order reference |
     | `unit_price` | In major units (e.g. `49.99`) |
+    | `quantity` | How many of this kit on this row. Blank defaults to 1. A row with quantity 2 creates two separate kit rows in your collection. |
+    | `received` | `yes` or `no`. Blank defaults to `yes`. Set to `no` for orders still on their way. |
 
     You don't need to describe orders separately. Write the kits; plamotrack works out the retailers, orders, and order lines from the rows.
   </Step>
@@ -68,7 +70,7 @@ The apply step checks against a fingerprint of what you previewed. If your colle
 
 ## Re-importing safely
 
-Every exported row includes an internal ID. Importing an archive back into the same instance matches those IDs to your existing records — so re-importing is always a no-op. Nothing changes, because nothing has changed. Use this freely for backup verification.
+Every exported row includes a unique ID. Importing an archive back into the same instance matches those IDs to your existing records — so re-importing is always a no-op. Nothing changes, because nothing has changed. Use this freely for backup verification.
 
 ## Limits
 

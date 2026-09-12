@@ -1,7 +1,7 @@
 ---
-title: "Upgrade plamotrack to a new version"
+title: "How to upgrade plamotrack: pull, rebuild, and migrate"
 sidebarTitle: "Upgrading"
-description: "How to upgrade plamotrack: pull the latest code, rebuild containers, and let migrations run automatically. Includes version-specific notes for 0.4.0 and 0.3.0."
+description: "How to upgrade plamotrack: pull the latest code, rebuild containers, and run migrations automatically. Version notes for 0.4.0, 0.3.0, and 0.2.10."
 ---
 
 Upgrading plamotrack is a two-command process. Database migrations run automatically before the API starts — there's no separate step. Always export a backup first.
@@ -58,6 +58,8 @@ This release added authentication. After upgrading, your instance starts **uncla
   </Step>
   <Step title="Create access tokens for scripts and MCP clients">
     Every script or MCP client that was pointing at `/mcp/` now requires an `Authorization: Bearer ptk_…` header. Go to **Settings → Access tokens** and mint one for each client. The README's *Wiring up the MCP server* section has the exact configuration snippets.
+
+    Note: `/api/meta`, `/openapi.json` and `/api/docs` also no longer answer anonymously — any script that read them needs a token too.
   </Step>
 </Steps>
 

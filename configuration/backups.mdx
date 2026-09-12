@@ -1,10 +1,10 @@
 ---
-title: "Back up and restore your plamotrack collection"
+title: "plamotrack backups: database dump and restore guide"
 sidebarTitle: "Backups"
-description: "Export a full archive from Settings before upgrading. Restore it with pg_restore or by re-importing the CSV archive. Covers all three restore scenarios."
+description: "How to back up and restore your plamotrack collection using pg_dump and pg_restore. Covers all three restore scenarios and what survives each."
 ---
 
-Your collection is in a Postgres database inside the Docker stack. There are two ways to back it up: a PostgreSQL dump (full fidelity, required for proper restores) and the CSV archive export in the app (great for a human-readable copy you can open in Excel). Always back up before upgrading.
+Your collection lives in a Postgres database inside the Docker stack. There are two ways to back it up: a PostgreSQL dump (full fidelity, required for proper restores) and the CSV archive export in the app (great for a human-readable copy you can open in a spreadsheet). Always back up before upgrading.
 
 ## Quick backup from the app
 
@@ -15,47 +15,53 @@ Go to **Settings → Data management → Export** and download the ZIP archive. 
 Run the following command from your plamotrack directory. The dump file is a portable Postgres archive.
 
 ```bash
-docker compose exec -T db \
-  pg_dump -U plamotrack plamotrack \
-  --no-owner --no-acl -F c \
-  > backup-$(date +%Y%m%d).dump
+docker compose exec -T db sh -c \
+  'exec pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB"' \
+  > plamotrack-$(date +%F).dump
 ```
+
+<Note>
+  A backup is two things: the dump file **and** your `.env`. Keep them together. The `.env` holds the secrets (your database password and, in OIDC mode, `MCP_OAUTH_SIGNING_KEY`) that make the backup fully restorable.
+</Note>
 
 ## Restoring a dump
 
 Restore into an empty database — `pg_restore` will not merge cleanly into a populated one.
 
 <Steps>
-  <Step title="Stop the API (keeps the database running)">
+  <Step title="Tear down the current stack (removes the database volume)">
     ```bash
-    docker compose stop api web migrate
+    docker compose down -v
     ```
+
+    <Warning>
+      `docker compose down -v` deletes the `db-data` volume, which **is** your collection. Without `-v` the volume survives and `down` is safe. Take a backup first regardless.
+    </Warning>
   </Step>
-  <Step title="Drop and recreate the database">
+  <Step title="Start the database and wait for it to be ready">
     ```bash
-    docker compose exec db psql -U plamotrack -c 'DROP DATABASE plamotrack;'
-    docker compose exec db psql -U plamotrack -c 'CREATE DATABASE plamotrack;'
+    docker compose up -d db --wait
     ```
   </Step>
   <Step title="Restore the dump">
     ```bash
-    docker compose exec -T db \
-      pg_restore -U plamotrack -d plamotrack --no-owner --no-acl \
-      < backup-20260101.dump
+    docker compose exec -T db sh -c \
+      'exec pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists' \
+      < plamotrack-2026-08-10.dump
     ```
   </Step>
   <Step title="Start everything back up">
     ```bash
-    docker compose up -d --wait
+    docker compose up -d --build --wait
     ```
   </Step>
 </Steps>
 
 ## What survives a restore
 
-What comes back depends on which half of the backup you restore and which `.env` you pair it with. The deployment gate runs all three of these scenarios on every release.
+What comes back depends on which half of the backup you restore and which `.env` you pair it with.
 
-| You restore | Collection | Sessions | Access tokens | Linked MCP clients |
+| You restore | Collection | Browser sessions | Access tokens | Linked MCP clients |
 |---|---|---|---|---|
 | Dump + same `.env` | ✅ intact | ✅ still signed in | ✅ still valid | ✅ still linked |
 | Dump + different `.env` | ✅ intact | ✅ still signed in | ✅ still valid | ⚠️ clients re-authorise once |
