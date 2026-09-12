@@ -1,37 +1,39 @@
 ---
-title: "Changelog"
-sidebarTitle: "Changelog"
+title: "Update plamotrack, and what changed in each release"
+sidebarTitle: "Updating & changelog"
 description: "What's new in plamotrack, release by release, with the upgrade steps, migration notes and data checks you need before updating."
 ---
 
-New features, fixes and update notes, newest first. These are published alpha releases; each entry links to the full release notes on GitHub.
+How to update, then what changed in each release, newest first. These are published alpha releases; each entry links to the full release notes on GitHub.
 
 <Note>
   **Skipping versions?** Read the update notes for every release newer than yours before rebuilding. A release with no new migration can still require setup or data checks inherited from an earlier release.
 </Note>
 
-<Accordion title="How to update plamotrack">
-  These steps are for the standard installation from the `main` branch. Run commands from your `plamotrack` folder, using the same terminal as in [Installation](/installation).
+## How to update plamotrack
 
-  1. **Back up the database and your `.env`.** Follow [Backups](/configuration/backups). A CSV export is a useful extra copy of your collection, but it does not include your owner account, sessions or access tokens.
-  2. **Read the relevant release notes below.** Make any required configuration changes before starting the new version.
-  3. **Pull the code and rebuild:**
-     ```bash
-     git pull
-     docker compose up -d --build --wait
-     ```
-     Keep `--build`, including on later updates. The `migrate` service applies new database migrations before the API starts; you do not run a separate migration command.
-  4. **Check the result:**
-     ```bash
-     docker compose ps -a
-     docker compose logs migrate
-     ```
-     The `db`, `api` and `web` services should be running. `migrate` should have finished with `Exited (0)`. Open the app and follow any setup steps in the release notes.
+These steps are for the standard installation from the `main` branch. Run commands from your `plamotrack` folder, using the same terminal as in [Installation](/installation).
 
-  If you checked out a release tag instead of `main`, select the published tag you intend to install before rebuilding; `git pull` does not update a detached checkout.
+1. **Back up the database and your `.env`.** Follow [Backups](/configuration/backups). A CSV export is a useful extra copy of your collection, but it does not include your owner account, sessions or access tokens.
+2. **Read the relevant release notes below.** Make any required configuration changes before starting the new version.
+3. **Pull the code and rebuild:**
+   ```bash
+   git pull
+   docker compose up -d --build --wait
+   ```
+   Keep `--build`, including on later updates. The `migrate` service applies new database migrations before the API starts; you do not run a separate migration command.
+4. **Check the result:**
+   ```bash
+   docker compose ps -a
+   docker compose logs migrate
+   ```
+   The `db`, `api` and `web` services should be running. `migrate` should have finished with `Exited (0)`. Open the app and follow any setup steps in the release notes.
 
-  **If the update fails**, read the migration output and [Troubleshooting](/configuration/troubleshooting) before continuing. Keep your database intact. If you need to roll back across a migration, use the matching previous application version and your pre-update backup, following [the restore guide](/configuration/backups#restoring-a-dump). Some database downgrades discard data; exceptions are called out below.
-</Accordion>
+If you checked out a release tag instead of `main`, select the published tag you intend to install before rebuilding; `git pull` does not update a detached checkout.
+
+**If the update fails**, read the migration output and [Troubleshooting](/configuration/troubleshooting) before continuing. Keep your database intact. If you need to roll back across a migration, use the matching previous application version and your pre-update backup, following [the restore guide](/configuration/backups#restoring-a-dump). Some database downgrades discard data; exceptions are called out below.
+
+## Changelog
 
 <Update label="v0.4.0-alpha" description="10 September 2026">
   ## The Workbench interface

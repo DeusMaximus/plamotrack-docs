@@ -4,7 +4,7 @@ sidebarTitle: "Import & Export"
 description: "Export your collection as plain CSVs and import back to restore or merge. The starter sheet is the fastest path in from a spreadsheet, one row per kit."
 ---
 
-Your collection data is always yours. Export it as a ZIP of plain CSVs, import it back at any time, or move it to a new instance. Every import shows you a full preview of what will change before anything is written — nothing is committed until you click **Apply**.
+Your collection data is always yours. Export it as a ZIP of plain CSVs, import it back at any time, or move it to a new instance. Every import shows you a full preview of what will change before anything is written — nothing is committed until you click **Apply import**.
 
 All import and export options live in **Settings → Data management**.
 
@@ -14,7 +14,12 @@ plamotrack gives you two ways to export:
 
 1. **Full archive (.zip)** — go to **Settings → Data management → Export**. You get one CSV per table plus a `manifest.json` that records the export timestamp, app version, and row counts. Use this for backups, moving instances, or keeping an offline copy.
 
-2. **Single table (.csv)** — available from the Export section or from the button on any list page. Use this when you want to pull one table into a spreadsheet without the rest of the collection.
+2. **Single table (.csv)** — one button per table in the Export section, or the **Export CSV** button at the top of any list page. Use this when you want to pull one table into a spreadsheet without the rest of the collection.
+
+<Frame caption="Data management: export, the blank templates, and import with its preview.">
+  <img className="block dark:hidden" src="/images/screenshots/data-light.png" alt="Settings → Data management, with the Export buttons, the Blank templates and the Import area." />
+  <img className="hidden dark:block" src="/images/screenshots/data.png" alt="Settings → Data management, with the Export buttons, the Blank templates and the Import area." />
+</Frame>
 
 ## Importing your collection for the first time
 
@@ -22,7 +27,7 @@ If you're coming from a spreadsheet, Notion, or Baserow, the **starter sheet** i
 
 <Steps>
   <Step title="Download the starter sheet">
-    Go to **Settings → Data management → Starter sheet** and download `starter-sheet.csv`.
+    Go to **Settings → Data management** and, under **Blank templates**, click **Starter sheet (.csv)**. The download includes three example rows to overwrite.
   </Step>
   <Step title="Fill it in">
     Add one row per kit. The key columns are:
@@ -42,7 +47,7 @@ If you're coming from a spreadsheet, Notion, or Baserow, the **starter sheet** i
     You don't need to describe orders separately. Write the kits; plamotrack works out the retailers, orders, and order lines from the rows.
   </Step>
   <Step title="Import the sheet">
-    Go to **Settings → Data management → Import**, upload your filled-in sheet, and review the preview. Click **Apply** when it looks right.
+    Go to **Settings → Data management → Import**. Drop your filled-in sheet on the upload area or browse for it, leave **If something already exists** on **Merge**, and click **Preview changes**. Review the preview, then click **Apply import** when it looks right.
   </Step>
 </Steps>
 
@@ -64,7 +69,12 @@ Choose the right mode before you import:
 
 ## Preview before you commit
 
-Every import — regardless of mode — shows you a full preview of what will change: records to add, update, or delete. Nothing is written until you click **Apply**.
+Every import — regardless of mode — shows you a full preview of what will change: records to add, update, or delete, table by table. Nothing is written until you click **Apply import**.
+
+<Frame caption="A starter sheet previewed. The two retailers already exist, so they are unchanged; the orders, order lines and kits are new.">
+  <img className="block dark:hidden" src="/images/screenshots/import-preview-light.png" alt="The Import card after Preview changes: a starter sheet read as 9 new and 2 unchanged, with the retailers, orders, order lines and kits it would create listed by row." />
+  <img className="hidden dark:block" src="/images/screenshots/import-preview.png" alt="The Import card after Preview changes: a starter sheet read as 9 new and 2 unchanged, with the retailers, orders, order lines and kits it would create listed by row." />
+</Frame>
 
 The apply step checks against a fingerprint of what you previewed. If your collection changed between the preview and the apply (because you moved a kit or received an order in the meantime), plamotrack refuses and asks you to preview again. You only ever apply exactly what you reviewed.
 
