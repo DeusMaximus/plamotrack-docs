@@ -1,80 +1,236 @@
 ---
-title: "How to upgrade plamotrack: pull, rebuild, and migrate"
-sidebarTitle: "Upgrading"
-description: "How to upgrade plamotrack: pull the latest code, rebuild containers, and run migrations automatically. Version notes for 0.4.0, 0.3.0, and 0.2.10."
+title: "Changelog"
+sidebarTitle: "Changelog"
+description: "What's new in plamotrack, release by release, with the upgrade steps, migration notes and data checks you need before updating."
 ---
 
-Upgrading plamotrack is a two-command process. Database migrations run automatically before the API starts — there's no separate step. Always export a backup first.
+New features, fixes and update notes, newest first. These are published alpha releases; each entry links to the full release notes on GitHub.
 
-## Standard upgrade
+<Note>
+  **Skipping versions?** Read the update notes for every release newer than yours before rebuilding. A release with no new migration can still require setup or data checks inherited from an earlier release.
+</Note>
 
-```bash
-git pull
-docker compose up -d --build --wait
-```
+<Accordion title="How to update plamotrack">
+  These steps are for the standard installation from the `main` branch. Run commands from your `plamotrack` folder, using the same terminal as in [Installation](/installation).
 
-That's it. The `migrate` container applies any new migrations before the API starts. If a migration fails, the API won't start and you'll get a readable error rather than a half-migrated database serving traffic. Check migration output with:
+  1. **Back up the database and your `.env`.** Follow [Backups](/configuration/backups). A CSV export is a useful extra copy of your collection, but it does not include your owner account, sessions or access tokens.
+  2. **Read the relevant release notes below.** Make any required configuration changes before starting the new version.
+  3. **Pull the code and rebuild:**
+     ```bash
+     git pull
+     docker compose up -d --build --wait
+     ```
+     Keep `--build`, including on later updates. The `migrate` service applies new database migrations before the API starts; you do not run a separate migration command.
+  4. **Check the result:**
+     ```bash
+     docker compose ps -a
+     docker compose logs migrate
+     ```
+     The `db`, `api` and `web` services should be running. `migrate` should have finished with `Exited (0)`. Open the app and follow any setup steps in the release notes.
 
-```bash
-docker compose logs migrate
-```
+  If you checked out a release tag instead of `main`, select the published tag you intend to install before rebuilding; `git pull` does not update a detached checkout.
 
-<Warning>
-  Back up before upgrading. Use the `pg_dump` method or export a CSV archive from Settings first. See [Backups](/configuration/backups).
-</Warning>
+  **If the update fails**, read the migration output and [Troubleshooting](/configuration/troubleshooting) before continuing. Keep your database intact. If you need to roll back across a migration, use the matching previous application version and your pre-update backup, following [the restore guide](/configuration/backups#restoring-a-dump). Some database downgrades discard data; exceptions are called out below.
+</Accordion>
 
-## Upgrading to 0.4.0
+<Update label="v0.4.0-alpha" description="10 September 2026">
+  ## The Workbench interface
 
-No schema migration, no authentication change, no new setting. Run `git pull && docker compose up -d --build --wait` and sign in as before.
+  - **Home replaces the board.** See your current builds, recent backlog additions, completed kits and incoming orders together. Edit cards with the same dialogs used on the list pages.
+  - **A consistent look**, with warm surfaces, amber accents and light, dark or device-controlled themes. Theme choice belongs to each browser.
+  - **Shareable list views.** Kits, Orders, Inventory and Retailers keep their search, filters, sort and page in the URL, so bookmarks reopen the same view.
 
-What changed for API clients: every order row now carries a derived `stage` field (`received`, `in_transit`, `pre_ordered`, `ordered`). The `GET /summary` endpoint and `get_summary` MCP tool are new. The kit and order list endpoints and tools accept `sort` and `limit` parameters. The `/board` route redirects to `/`. Bookmarks to the Orders page using the old query values (`?status=pending|pre-order|shipped`) will read as no filter — update them to the current wire values (`ordered`, `pre_ordered`, `in_transit`, `received`).
+  **Update notes:** From 0.3.0, there are no new migrations, authentication changes or settings. Run the normal update and sign in as before. Returning to `v0.3.0-alpha` only requires checking out that tag and rebuilding; these two versions use the same database schema.
 
-Rolling back is `git checkout v0.3.0-alpha` followed by the same `up` command — the database needs no changes.
+  **API and bookmark changes:** Orders gain a derived `stage`. The API adds `GET /summary` (`/api/summary` through the bundled web server), and MCP adds `get_summary`. Kit and order lists accept `sort` and `limit`. `/board` redirects to Home. Update old Orders bookmarks to use `ordered`, `pre_ordered`, `in_transit` or `received` in `?status=`; the old values no longer select a filter.
 
-## Upgrading to 0.3.0
+  **Known limitation at release:** The app still uses a desktop layout on phones. An order dialog can remain loading if a catalog request fails ([#238](https://github.com/DeusMaximus/plamotrack/issues/238)).
 
-This release added authentication. After upgrading, your instance starts **unclaimed** — even if you had data before. The four new migrations only add the authentication tables; your collection is untouched.
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.4.0-alpha)
+</Update>
 
-<Steps>
-  <Step title="Back up first">
-    Take a database dump and save your `.env`. See [Backups](/configuration/backups).
-  </Step>
-  <Step title="Check your host settings">
-    If you reach the instance by anything other than `localhost`, make sure `ALLOWED_HOSTS` names it in `.env`. If you're behind a TLS proxy, set `PUBLIC_BASE_URL` to the `https://` address in the browser's bar.
-  </Step>
-  <Step title="Pull and rebuild">
-    ```bash
-    git pull && docker compose up -d --build --wait
-    ```
-  </Step>
-  <Step title="Claim the instance">
-    Read the one-time setup token from the API log:
+<Update label="v0.3.0-alpha" description="8 September 2026">
+  ## Your instance has an owner
 
-    ```bash
-    docker compose logs api | grep -A6 "no owner yet"
-    ```
+  - **Owner sign-in** with a password, or an OpenID Connect provider you configure.
+  - **Personal access tokens** for scripts and MCP clients, with scopes, optional expiry and revocation.
+  - **OAuth connections for compatible AI clients** in OIDC mode, plus host-side recovery commands and an authentication audit trail.
+  - Documented remote deployments through a Cloudflare Tunnel or Caddy, with proxy-aware rate limiting.
 
-    Open the instance in your browser, enter the token, and choose your owner password.
-  </Step>
-  <Step title="Create access tokens for scripts and MCP clients">
-    Every script or MCP client that was pointing at `/mcp/` now requires an `Authorization: Bearer ptk_…` header. Go to **Settings → Access tokens** and mint one for each client. The README's *Wiring up the MCP server* section has the exact configuration snippets.
+  <Warning>
+    **Updating from a version before 0.3.0 requires setup.** Your instance starts unclaimed and collection access requires authentication. The four migrations add authentication tables; they leave your collection intact.
+  </Warning>
 
-    Note: `/api/meta`, `/openapi.json` and `/api/docs` also no longer answer anonymously — any script that read them needs a token too.
-  </Step>
-</Steps>
+  **Update notes:**
 
-## Upgrading to 0.2.10
+  1. Before rebuilding, check `ALLOWED_HOSTS` if you use a LAN or custom name. Behind an HTTPS proxy, set `PUBLIC_BASE_URL` to your public HTTPS address too.
+  2. After rebuilding, run `docker compose logs api`. Find the latest setup token and follow [First Run](/first-run) to claim the instance. If you configured OIDC, use the [OIDC setup guide](/authentication/oidc).
+  3. Give existing scripts and token-based MCP connections a [personal access token](/authentication/access-tokens) from **Settings → Access tokens**. They must send it in the `Authorization` header. Compatible clients can instead use [MCP OAuth](/mcp/overview) in OIDC mode.
 
-This release added host allowlisting. If you reach the instance by anything other than `localhost` or `127.0.0.1` — a LAN hostname, a container name, a mesh DNS name — add that name to `ALLOWED_HOSTS` in `.env` **before** running `docker compose up`.
+  `/api/meta`, `/openapi.json` and `/api/docs` also require authentication. For rollback to 0.2.10, restore the pre-update backup with that application version. Downgrading the live schema removes the owner, sessions, access tokens and MCP OAuth links.
 
-If you forget, you'll get `421 Misdirected Request` after the upgrade. Add the name to `ALLOWED_HOSTS` and run `docker compose up -d` again. Nothing is lost.
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.3.0-alpha)
+</Update>
 
-## If the upgrade fails
+<Update label="v0.2.10-alpha" description="3 September 2026">
+  ## The instance knows its own name
 
-Check the migration logs first:
+  Requests for unknown hostnames are refused, browser writes are checked against allowed origins, and the bundled web server adds security headers and consistent endpoint spellings.
 
-```bash
-docker compose logs migrate
-```
+  <Warning>
+    **Check your hostname before updating.** If you use a LAN hostname, mesh name or another custom address, make sure it is allowed in `.env`. `WEB_BIND=0.0.0.0` does not allow every hostname.
+  </Warning>
 
-If you need to roll back, restore your pre-upgrade backup. See [Backups](/configuration/backups) for the restore procedure.
+  **Update notes:** Add your address to `ALLOWED_HOSTS`, or set `PUBLIC_BASE_URL` when accessing the app through an HTTPS proxy; its hostname is allowed automatically. For example:
+
+  ```bash
+  ALLOWED_HOSTS=nas.lan,192.168.1.10
+  ```
+
+  If you see `421 Misdirected Request`, correct the setting and run `docker compose up -d` again. Your collection is unchanged. This release has no migration.
+
+  Clients must use `/mcp/` and `/openapi.json`, rather than their old `/api/` aliases. REST URLs with an extra trailing slash return 404.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.2.10-alpha)
+</Update>
+
+<Update label="v0.2.9-alpha" description="29 August 2026">
+  ## Language and region settings
+
+  Instance-wide settings now control language, regional formatting, time zone, date style, hour cycle and reference currency. Settings gains dedicated sections, and REST errors and import diagnostics gain structured codes for translation and automation.
+
+  **Update notes:** One migration creates the settings row, carrying across your existing reference currency. After updating, visit **Settings → Language & region** and choose your locale and time zone. The initial defaults are `en-AU` and UTC; the reference currency is now managed in the app, with the environment value used only to seed a new instance.
+
+  **Before your next CSV import:** Datetimes without an explicit offset now use the instance time zone instead of always meaning UTC. plamotrack archives already include offsets and are unaffected. Automation handling ambiguous order matches should use `import.order_match_ambiguous` instead of the generic `import.match_ambiguous` code.
+
+  Downgrading removes the settings table and loses changes made to those settings.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.2.9-alpha)
+</Update>
+
+<Update label="v0.2.8-alpha" description="25 August 2026">
+  ## Withdraw upgrades and recover stuck orders
+
+  - Withdraw an upgrade applied to a kit, explicitly choosing whether the part returns to stock.
+  - Edit an order without overwriting kit details changed elsewhere.
+  - Use the catalog picker from the keyboard.
+  - Delete an old order whose catalog item was removed by an earlier version, so you can re-enter it correctly.
+
+  **Update notes:** No migration or reinterpretation of existing data. If an old order points at a missing catalog item, receiving or editing it still refuses; deleting and re-entering the order is the recovery path.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.2.8-alpha)
+</Update>
+
+<Update label="v0.2.7-alpha" description="24 August 2026">
+  ## Order timelines, display gear and reliable imports
+
+  Orders gain shipping dates, receipts can be backdated, and kits gain editable build dates and a series field. Display gear becomes a fourth inventory catalog. MCP gains more collection tools, and imports and concurrent edits receive stronger consistency checks. Exported archives now read every table from one database snapshot.
+
+  **Update notes:** Three additive migrations add the new fields and display catalog. Downgrading past the display migration refuses while display data exists; keep a backup from before the update if you may need to return to an earlier version.
+
+  **If you imported CSVs before 0.2.7:** Check that kit order-line quantities match their attached kits before relying on a new archive for a full restore. Older imports could leave mismatches that a later restore refuses. The [quantity check and repair instructions](https://github.com/DeusMaximus/plamotrack/blob/v0.4.0-alpha/docs/operations.md#if-you-imported-csvs-before-027) explain how to inspect and reconcile them.
+
+  Work planned for 0.2.6 was included here; there was no separate 0.2.6 release.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.2.7-alpha)
+</Update>
+
+<Update label="v0.2.5-alpha" description="15 August 2026">
+  ## Imports honour their preview
+
+  Applying an import is now bound to its preview. Ambiguous numbers are reported instead of guessed, archives are checked against their manifests, and upload, unpacked-size and row limits are enforced before expansion.
+
+  **Update notes:** No migration. API clients calling `/import/apply` must send the `plan_hash` returned by `/import/preview`. If the file or collection changes, preview again. The browser handles this for you. Use the current rebuild instructions above when updating from a clone.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.2.5-alpha)
+</Update>
+
+<Update label="v0.2.4.2-alpha" description="11 August 2026">
+  ## Preserve an unstated kit scale
+
+  A follow-up fix stops an order-line price edit from replacing a kit's empty or custom scale with the grade's default. An unchanged kit number is preserved too.
+
+  **Update notes:** No migration. If you still run 0.2.4 or 0.2.4.1, update before entering more collection data. Use the kit editor to clear a scale or kit number; typing a replacement in an order line applies it to every kit on that line.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.2.4.2-alpha)
+</Update>
+
+<Update label="v0.2.4.1-alpha" description="11 August 2026">
+  ## Keep individual kit details during order edits
+
+  A hotfix stops unrelated order edits, such as changing tracking, from copying one kit's details onto the other kits spawned by the order. Fields you intentionally edit on a line still propagate to its kits.
+
+  **Update notes:** No migration. This release still had the scale issue fixed in 0.2.4.2. Existing overwritten details are not reconstructed by updating; check affected kits against your own records.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.2.4.1-alpha)
+</Update>
+
+<Update label="v0.2.4-alpha" description="11 August 2026">
+  ## Preserve stock, currencies and upgrade history
+
+  Notes-only inventory edits stop overwriting newer stock counts. Order lines keep their own currencies, free shipping stays distinct from an unknown shipping cost, and deleting a kit with applied upgrades is blocked. CSV tool prices use their currency's decimal places.
+
+  **Update notes:** No migration. The order editor still had defects after this release; 0.2.4.1 and 0.2.4.2 contain follow-up fixes.
+
+  **Check older data:** Review mixed-currency orders entered through MCP, REST or CSV, especially if you later edited them in the browser. Earlier edits could change a line's currency and amount to match the order header. These values cannot be identified or corrected automatically. Also check custom kit scales, kit numbers and zero-cost shipping if they changed unexpectedly.
+
+  Previously deleted upgrade-application records are not restored by the fix. Reconcile any unexplained upgrade stock against your records before adjusting it in Inventory.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.2.4-alpha)
+</Update>
+
+<Update label="v0.2.3-alpha" description="11 August 2026">
+  ## Tool costs remember their currency
+
+  Tool costs now store a currency alongside the amount. Import fixes prevent a currency-only change from silently relabelling a purchase, and the tool form waits for the instance currency before choosing a default.
+
+  **Update notes:** A migration labels existing tool costs with your instance's reference currency. If you originally entered a cost in another currency, open **Inventory → Tools** and correct it after updating. The migration has no historical currency record to recover.
+
+  For a `tools.csv` exported before this release, add `unit_cost_reference_currency` if the costs use a different currency from your instance default. Downgrading to 0.2.1 or 0.2.2 clears tool costs in other currencies because the old field cannot represent them.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.2.3-alpha)
+</Update>
+
+<Update label="v0.2.2-alpha" description="10 August 2026">
+  ## Money uses each currency's decimal places
+
+  Forms and CSVs handle currencies with three or four decimal places. Imports preserve a conversion's recorded currency, and unrecognised currency codes produce a warning.
+
+  **Update notes:** No migration. Check older amounts in HUF, COP, IQD or MGA: the browser and importer previously disagreed on their decimal places. Compare them with your purchase records and correct any wrong values; the update cannot infer what you originally meant.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.2.2-alpha)
+</Update>
+
+<Update label="v0.2.1-alpha" description="9 August 2026">
+  ## Converted prices survive order edits
+
+  Order edits preserve recorded conversion amounts. The packaged database is no longer published on port 5432, and backup commands respect your configured database name and user.
+
+  **Update notes:** No migration. If you edited foreign-currency orders on 0.1.0 or 0.2.0, check their converted amounts. Updating cannot recover values already lost; use your records or a backup to restore them.
+
+  Database tools connecting to `localhost:5432` must use the container instead. If you copied older backup commands into a script, replace them with the current [backup instructions](/configuration/backups). `POSTGRES_BIND` is no longer used.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.2.1-alpha)
+</Update>
+
+<Update label="v0.2.0-alpha" description="9 August 2026">
+  ## Install the whole app with Docker Compose
+
+  The web app, API, migrations and database now start as one stack. The app gains a configurable reference currency, and conversion amounts retain the currency recorded at entry.
+
+  **Update notes:** Migrations run automatically. Existing conversion values retain their AUD meaning. Archives from 0.1.0 still import as AUD even when the instance now uses another reference currency.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.2.0-alpha)
+</Update>
+
+<Update label="v0.1.0-alpha" description="5 August 2026">
+  ## First public build
+
+  The first release introduced kit pipelines, purchase tracking, quantity-tracked inventory, retailer ratings, CSV import/export and an MCP server for collection management.
+
+  **Historical note:** This version ran the app from source and had no authentication. The full container installation arrived in 0.2.0 and owner authentication in 0.3.0. Use the current [installation guide](/installation) for a new instance.
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.1.0-alpha)
+</Update>
+
+Release dates use GitHub's publication dates in UTC. [Browse all releases](https://github.com/DeusMaximus/plamotrack/releases).
