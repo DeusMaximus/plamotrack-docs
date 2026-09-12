@@ -3,10 +3,13 @@
   "name": "plamotrack",
   "theme": "almond",
   "logo": {
-    "light": "https://media.brand.dev/06241513-71e0-4cb7-a598-fc465d30fd26.svg",
-    "dark": "https://media.brand.dev/53b25999-1371-490b-b273-00dc33388d62.svg"
+    "light": "/images/plamotrack-logo-light.svg",
+    "dark": "/images/plamotrack-logo-dark.svg"
   },
-  "favicon": "https://media.brand.dev/6119e247-9849-4155-8389-d569512a4b7e.png",
+  "favicon": {
+    "light": "/images/plamotrack-icon-light.svg",
+    "dark": "/images/plamotrack-icon-dark.svg"
+  },
   "colors": {
     "primary": "#885610",
     "light": "#e2a44b",
