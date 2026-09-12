@@ -17,9 +17,13 @@ Every kit you track lives in exactly one of these stages at any given time:
 | **In Transit** | Shipped and on its way to you |
 | **Backlog** | In hand, not started — yes, we all have one |
 | **Building** | Currently on the bench |
-| **Complete** | Done — rated, dated, and on the shelf |
+| **Complete** | Finished; add dates, notes and a rating if you want them |
 
 "Backlog" means physically in your hands but not yet started. plamotrack is unapologetic about this.
+
+<Frame caption="The light theme uses the same layout as the dark theme. All collection details shown here are invented demo data.">
+  ![Home in the light theme, with active builds, backlog, completed kits and incoming orders.](https://raw.githubusercontent.com/DeusMaximus/plamotrack/d769085ff57148002e87c4410ffeca89d40f5609/docs/screenshots/home-light.png)
+</Frame>
 
 ## The Home page
 
@@ -33,12 +37,9 @@ The Home page divides your collection into four sections, each designed to answe
 
 ## Moving a kit
 
-Every card on the Home page has an edit button that opens a dialog where you can change the kit's status. There is no drag-and-drop — plamotrack replaced a board-style layout that stopped being useful somewhere around fifty kits. The dialog approach travels with the dates a move should carry, so nothing slips through. The dialog shows the fields relevant to that particular move:
+Use a kit card's edit control to change its **Status**, **Build started** or **Build completed** date. Moving it to **Building** or **Complete** fills the matching date if it is empty; an existing date is preserved. A rating is optional.
 
-- Moving to **Building** asks for a build start date.
-- Moving to **Complete** asks for a build completion date and a rating.
-
-You can backdate both — log the box when you find the time, not the moment it lands.
+Order cards open **Edit order**, where **Shipped on** and **Received on** record shipping and arrival. See [Kits & Orders](/using/kits-and-orders#record-shipping-and-arrival) for the steps.
 
 ## Filtering and browsing
 
