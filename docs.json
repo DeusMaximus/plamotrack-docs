@@ -8,9 +8,9 @@
   },
   "favicon": "https://media.brand.dev/6119e247-9849-4155-8389-d569512a4b7e.png",
   "colors": {
-    "primary": "#040404",
-    "light": "#7c7c7c",
-    "dark": "#d3d3d3"
+    "primary": "#885610",
+    "light": "#e2a44b",
+    "dark": "#885610"
   },
   "navbar": {
     "primary": {
@@ -81,5 +81,14 @@
         ]
       }
     ]
+  },
+  "background": {
+    "color": {
+      "light": "#f3f1ec",
+      "dark": "#141413"
+    }
+  },
+  "fonts": {
+    "family": "Inter"
   }
 }

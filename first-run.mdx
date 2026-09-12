@@ -4,69 +4,100 @@ sidebarTitle: "First Run"
 description: "After installing, your plamotrack instance is unclaimed. Follow these steps to retrieve the one-time setup token and set your owner password."
 ---
 
-When plamotrack starts for the first time, it's unclaimed — every page shows a setup screen and all collection data requires sign-in. You claim it once by providing a one-time setup token (printed in the API log) and choosing a password. After that, you're in and the setup screen is gone for good.
+After [installation](/installation), plamotrack shows **Set up plamotrack** until you claim it. Each instance has one owner. The setup token proves that you can access the computer running the app; the owner password is what you will use to sign in afterwards.
+
+These steps use the default password login. If you have deliberately configured OIDC, follow [OIDC login](/authentication/oidc) instead.
+
+## Claim your instance
 
 <Steps>
-  <Step title="Get the setup token">
-    Run the following command to find the token in the API log:
+  <Step title="Find the setup token">
+    Return to the terminal you used for installation. Run this from your `plamotrack` folder:
 
     ```bash
-    docker compose logs api | grep -A6 "no owner yet"
+    docker compose logs api
     ```
 
-    Copy the token from the output. It looks like a long random string.
+    Find the most recent message containing **This plamotrack instance has no owner yet**. The setup token is printed below it. Copy the token itself, without the surrounding log text.
+
+    Your log will contain a message like this. The example token below is deliberately invalid:
+
+    ```text
+    This plamotrack instance has no owner yet.
+    Open http://localhost:8080 and enter this setup token with your new password:
+    
+        EXAMPLE-ONLY-NOT-A-REAL-SETUP-TOKEN
+    ```
+
+    Use the token from your own API log.
 
     <Tip>
-      The token is regenerated every time the API container starts while the instance is unclaimed. If you lose it or the output scrolled past, run `docker compose restart api` and check the logs again — a fresh token will be printed.
+      While the instance is unclaimed, each API restart creates a new token. If you need a fresh one, run `docker compose restart api`, then `docker compose logs api` again. Use the token in the latest startup message.
     </Tip>
   </Step>
+  <Step title="Open the setup form">
+    Open [http://localhost:8080](http://localhost:8080) on the same computer. If you changed the port during installation, use that port.
 
-  <Step title="Open the setup screen">
-    Navigate to [http://localhost:8080](http://localhost:8080) (or your instance's URL if you changed the port or host). You should see the setup form — it will be visible on every page until you claim the instance.
+    The heading should be **Set up plamotrack**. A **Sign in** heading means the instance has already been claimed.
   </Step>
+  <Step title="Create the owner">
+    Fill in all three fields:
 
-  <Step title="Enter the token and choose a password">
-    Paste the setup token into the token field, then choose the owner password you want to use going forward. Submit the form to create your account.
+    - **Setup token:** the token you just copied.
+    - **Password:** a new owner password of at least 12 characters.
+    - **Confirm password:** the same owner password again.
 
-    The token is single-use. Once you claim the instance, it won't be printed to the log again and the setup screen disappears.
+    Click **Create owner**.
+
+    This password signs you into plamotrack. It is separate from the database password you put in `.env`; you do not need to enter that database password in the browser.
   </Step>
+  <Step title="Start your collection">
+    Successful setup signs you in and opens **Home**. Your collection is empty because you have not added anything yet.
 
-  <Step title="Sign in">
-    You're now the owner. The app opens to the Home page with an empty collection — that's completely normal. Time to add some kits.
+    The setup token has now been used. On later visits, if you are signed out, enter your owner password on the **Sign in** screen.
   </Step>
 </Steps>
 
-## Getting your first kits in
+## Add your first kit
 
-There are two good ways to populate a fresh collection. Pick whichever fits your situation:
+For a kit you already own, you can start without recording a purchase:
+
+1. Open **Kits** in the sidebar and click **Add kit**.
+2. Enter its **Name** and **Grade**. For example, `RX-78-2 Gundam` and `HG`.
+3. Set **Status** to **Backlog** if the kit is in hand and you have not started building it.
+4. Add an optional **Scale**, **Kit number** or **Series**, then click **Add kit**.
+
+Your kit now appears in **Kits** and the **Backlog** section on Home. When you start the build, edit it and change **Status** to **Building**.
+
+<Tip>
+  If you want to record the purchase too, [add an order](/using/kits-and-orders#add-an-order) instead. An order creates its own kit records, so you do not need to add those kits a second time.
+</Tip>
 
 <CardGroup cols={2}>
-  <Card
-    title="Add an order"
-    icon="plus"
-    href="/using/kits-and-orders"
-  >
-    Record a new purchase and the kits in it.
+  <Card title="Kits and orders" icon="plus" href="/using/kits-and-orders">
+    Record purchases, shipping and arrivals, or update a build.
   </Card>
-  <Card
-    title="Import from a spreadsheet"
-    icon="file-import"
-    href="/using/import-export"
-  >
-    Use the starter sheet to bulk-import your existing collection.
+  <Card title="Import your collection" icon="file-import" href="/using/import-export">
+    Bring an existing collection in with the starter spreadsheet.
   </Card>
 </CardGroup>
 
+## Sign in again
+
+Use your owner password when the app asks you to sign in. You do not need another setup token.
+
+<Frame caption="After setup, the Sign in screen asks for your owner password.">
+  ![plamotrack Sign in screen with a Password field and Sign in button.](https://raw.githubusercontent.com/DeusMaximus/plamotrack/d769085ff57148002e87c4410ffeca89d40f5609/docs/screenshots/sign-in.png)
+</Frame>
+
 ## Forgot your password?
 
-If you get locked out, reset your password from inside the API container — never over the network:
+From the `plamotrack` folder on the computer running the app, run:
 
 ```bash
 docker compose exec api python -m app.auth.recovery reset-password
 ```
 
-The command prompts for a new password, sets it immediately, and signs every active browser session out. You'll need shell access to the host machine to run it. For more details on recovery options and rate limiting, see the [Authentication](/authentication) section.
+The command prompts for a new owner password and signs out active browser sessions. See [password login and recovery](/authentication/password-login) for the full instructions.
 
-<Note>
-  If you'd prefer to sign in with Google or another identity provider instead of a password, see [OIDC / Identity Provider Login](/authentication/oidc). You can switch modes at any time — it's a single line in `.env`.
-</Note>
+You can also configure [OIDC login](/authentication/oidc) to use an identity provider. That needs provider setup and the required environment settings; changing the login mode signs out existing browser sessions.

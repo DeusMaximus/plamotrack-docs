@@ -4,57 +4,93 @@ sidebarTitle: "Kits & Orders"
 description: "Learn how orders fan out into individual kit rows, how to record purchases and track shipping, and how to add kits you received as gifts or trades."
 ---
 
-In plamotrack, an order is a purchase record. When you add an order with two kits in it, plamotrack creates two separate kit rows — because you own two physical objects, not "a quantity of 2". Each kit moves independently through the pipeline, has its own build notes and dates, and can be rated separately when it's done.
+Use **Kits** for the individual models you own and **Orders** for their purchase history. You can add a kit on its own, or let an order create the kits for you.
 
-## Adding an order
+An order for two copies of the same Zaku creates two separate kits. Each can have its own status, build dates, notes and rating.
+
+## Add a kit you already own
+
+For a gift, trade or kit already on your shelf, a purchase record is optional.
 
 <Steps>
-  <Step title="Open Orders and start a new one">
-    Go to **Orders** and click **New order**.
+  <Step title="Open the kit form">
+    Open **Kits** in the sidebar and click **Add kit**.
   </Step>
-  <Step title="Choose a retailer">
-    Choose the retailer from the list, or type a new name to create one on the spot. You can fill in the retailer's report card later.
+  <Step title="Describe the kit">
+    Enter **Name** and **Grade**. Add **Scale**, **Kit number** and **Series** if you want them recorded.
+
+    Choose its **Status**: **Backlog** means it is in hand and unstarted; **Building** means you are working on it; **Complete** means it is finished.
   </Step>
-  <Step title="Add order lines">
-    Add one line for each type of kit. Enter the kit name, grade, quantity, and unit price for each line. A Zaku ×2 and a GM ×1 are two separate lines.
-  </Step>
-  <Step title="plamotrack fans out the kits">
-    For each line, plamotrack creates that many individual kit rows in your collection. One order line for quantity 2 becomes two independently tracked kits.
-  </Step>
-  <Step title="Mark it shipped">
-    Once the order ships, click **Mark shipped**. All the kits from that order move to **In Transit**, stamped with the ship date.
-  </Step>
-  <Step title="Mark it received">
-    When the box arrives, click **Mark received**. Every kit from the order lands in your **Backlog** at once, and any inventory items on the order count toward your on-hand stock.
+  <Step title="Save">
+    Click **Add kit**. The kit appears in your collection and the matching Home section.
   </Step>
 </Steps>
 
-## Why individual kit rows?
+If you plan to record the purchase as an order, use the next section instead. Adding the same models individually as well would create duplicates.
 
-Each physical kit is its own row, and that has real consequences:
+## Add an order
 
-- **Fixing a typo on the order** fixes it on every kit that came from that order — you don't need to edit each kit individually.
-- **Deleting an order** cleanly removes all the kits it created. Nothing gets stranded.
-- **Shipped kits count down** in the "In the mail" section on the Home page; received kits all land in your backlog together.
-- **Stock only changes when the order is received.** A pending order for Tamiya Extra Thin shows it's on order, but the bottle doesn't count as on-hand until the box arrives.
+<Steps>
+  <Step title="Start a new order">
+    Open **Orders** and click **New order**.
+  </Step>
+  <Step title="Record the purchase">
+    Choose a **Retailer**, or use the adjacent add control to create one. Check the **Order date** and **Currency**.
 
-## Adding kits without an order
+    You can also record an **Order number**, **Shipping cost**, **Delivery service** and tracking details.
+  </Step>
+  <Step title="Add the items">
+    In **Items**, choose the item type for each line. For a kit, enter the kit name, grade, quantity and unit price. Use **Add line** for another item.
 
-For gifts, trades, or kits you already owned before you started using plamotrack, you don't need an order record at all.
+    Two copies of one Zaku can share a line with **Quantity** set to `2`. A different model gets a separate line.
 
-Go to **Kits → Add kit**. These kits start in whatever status makes sense — typically **Backlog** — without an associated order. All the same fields are available: name, grade, scale, series, build notes, and dates.
+    For tools, consumables, upgrades or display items, search for an existing catalogue entry or create one through the picker.
+  </Step>
+  <Step title="Record whether it has arrived">
+    If the purchase is already in your hands, tick **Already in hand** and check the arrival date. This adds its inventory stock immediately and puts its kits in Backlog.
 
-## Editing a kit
+    Leave it unticked for an order you are waiting for. Use **Pre-order** if it is a pre-order.
+  </Step>
+  <Step title="Save the order">
+    Click **Record order**. plamotrack creates one kit for each physical model on the order. Inventory stock from a pending order waits until you record its arrival.
+  </Step>
+</Steps>
 
-Every kit has an edit dialog accessible from any list page or card. Open it to update:
+<Frame caption="Expand an order to see its items. Use its edit control to change details or record delivery dates. The purchase details shown here are invented demo data.">
+  ![Orders list with one order expanded to show kit and inventory lines, quantities and prices.](https://raw.githubusercontent.com/DeusMaximus/plamotrack/d769085ff57148002e87c4410ffeca89d40f5609/docs/screenshots/orders.png)
+</Frame>
 
-- Name, grade, scale, and series
-- Status (with the associated dates that go with it)
-- Rating (1–5) and build notes
-- Build start date and completion date
+## Record shipping and arrival
 
-The dialog only shows the date fields that make sense for the current status. You can update any of these at any time.
+In the current interface, you record these events through dates in **Edit order**:
+
+1. Open the order's edit control in **Orders**, or on its **In the mail** card on Home.
+2. When it ships, fill in **Shipped on** and click **Save changes**. Kits still waiting on the retailer move to **In Transit**.
+3. When the box arrives, open the order again, fill in **Received on** and click **Save changes**. Its kits still in **Pre-ordered**, **Ordered** or **In Transit** move to **Backlog**, and its inventory quantities are added to stock.
+
+You can record the actual past date if you are entering a delivery later. You do not need to record shipping before recording arrival. Kits already moved beyond the waiting stages keep their progress.
+
+## Edit a kit or order
+
+Use a kit's edit control on **Kits** or Home to change its status, name, grade, scale, series, notes or dates. Existing kits also have a **Rating (1–5)** field.
+
+Changing a kit to **Building** or **Complete** fills the matching build date if it is empty. You can enter the real date when recording an older build.
+
+Changing a kit detail on an order line applies that changed detail to every kit the line created. Details you leave unchanged retain each kit's individual values.
+
+## Why an edit or deletion may be refused
+
+Deleting an order means undoing its entry: plamotrack removes the kits it created and reverses any inventory stock that was added when it arrived.
+
+The app refuses the deletion if that would lose protected build history or reverse stock you have already used. For example:
+
+- A kit from the order is **Building**, **Complete** or has a rating.
+- A received order added five consumables, but fewer than five are now on hand.
+
+Removing a line or reducing its quantity has similar protections. The error explains what prevents the change; the order is kept when the deletion is refused. Keep a completed purchase as history rather than deleting it to tidy the list.
+
+A kit created by an order cannot be deleted separately from **Kits**. Correct the order line instead, subject to the same protections.
 
 <Note>
-  Kit statuses for ordered kits are managed through the order. When you mark an order shipped, all its kits move to **In Transit**. When you mark it received, they all move to **Backlog**. From there, move individual kits manually as you start and finish each build.
+  Recording an order does not add inventory stock until it is received. A pending order for cement is a purchase you are waiting for, not a bottle already on your bench.
 </Note>

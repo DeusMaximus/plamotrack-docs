@@ -1,95 +1,174 @@
 ---
-title: "How to install plamotrack with Docker in three minutes"
+title: "Install plamotrack with Docker"
 sidebarTitle: "Installation"
-description: "Install plamotrack on your own machine or server using Docker Compose. You need Docker installed — nothing else. The whole stack starts with one command."
+description: "Install Docker and Git, create your settings file, and start plamotrack on Windows, macOS or Linux. Then claim your instance and add your first kit."
 ---
 
-To run plamotrack you need Docker and about three minutes. That's it — there's no separate database to set up, no config files to juggle beyond one `.env`, and no accounts to create anywhere. The images build from the repo, and a single `docker compose` command brings the whole stack up and waits until it's healthy.
+plamotrack runs on a computer or server you control. Docker starts the app and its database together, so you do not need to install Python, Node.js or Postgres yourself.
 
-<Info>
-  **Prerequisite: Docker.** If you don't have it yet, install it from [docs.docker.com/get-started/get-docker/](https://docs.docker.com/get-started/get-docker/) and come back here.
-</Info>
+Allow time to install the prerequisites and download and build the images. With everything already installed, setup is a short sequence of commands; the first build can take longer than three minutes, depending on your computer and connection.
 
-## Installation
+## Before you start
+
+You need **Docker with Docker Compose**, **Git**, a web browser and a plain-text editor.
+
+<Tabs>
+  <Tab title="Windows">
+    Install [Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/) and follow its WSL 2 setup instructions. Install [Git for Windows](https://git-scm.com/install/windows), which includes **Git Bash**.
+
+    Start Docker Desktop and wait until its engine is running. Open **Git Bash** from the Start menu. Run the commands in this guide there.
+  </Tab>
+  <Tab title="macOS">
+    Install [Docker Desktop for Mac](https://docs.docker.com/desktop/setup/install/mac-install/) and [Git](https://git-scm.com/install/mac).
+
+    Start Docker Desktop and wait until its engine is running. Open **Terminal** from **Applications → Utilities**. Run the commands in this guide there.
+  </Tab>
+  <Tab title="Linux">
+    Install [Docker Engine](https://docs.docker.com/engine/install/) and the [Docker Compose plugin](https://docs.docker.com/compose/install/linux/), or use Docker Desktop. Install [Git for your distribution](https://git-scm.com/install/linux).
+
+    Open your distribution's **Terminal**. Follow Docker's installation instructions for starting its service and running Docker commands as your user.
+  </Tab>
+</Tabs>
+
+A terminal is the window where you enter commands. Copy one line at a time, press **Enter**, and wait for it to finish before entering the next. These commands should show version information:
+
+```bash
+git --version
+docker --version
+docker compose version
+```
+
+If a command is not found, finish installing that prerequisite and reopen the terminal.
+
+## Install plamotrack
 
 <Steps>
-  <Step title="Clone the repo">
-    Run the following command to clone plamotrack and move into its directory:
+  <Step title="Download the project">
+    In your terminal, run:
 
     ```bash
-    git clone https://github.com/DeusMaximus/plamotrack.git && cd plamotrack
+    cd ~
+    git clone https://github.com/DeusMaximus/plamotrack.git
+    cd plamotrack
     ```
-  </Step>
 
-  <Step title="Copy and edit the config file">
-    Copy the example environment file to create your own `.env`:
+    This creates a `plamotrack` folder in your home folder. The final command moves your terminal into it.
+
+    **Run every remaining command from this folder.** If you close the terminal and come back later, run `cd ~/plamotrack` first. Keep the folder: you will use it to stop, start and update the app.
+  </Step>
+  <Step title="Create your settings file">
+    Copy the supplied example:
 
     ```bash
     cp .env.example .env
     ```
 
-    Open `.env` in any text editor and replace the `change-me` placeholder in `POSTGRES_PASSWORD` with a real password:
+    The new `.env` file is in the `plamotrack` folder. Its name starts with a dot, so your file manager may hide it.
 
-    ```bash
-    POSTGRES_PASSWORD=change-me  # replace this
+    <Tabs>
+      <Tab title="Windows">
+        From the same Git Bash window, open the file in Notepad:
+
+        ```bash
+        notepad .env
+        ```
+
+        Save the existing file as `.env`, without adding `.txt`. To find it in File Explorer, open your home folder and then `plamotrack`; enable **File name extensions** and **Hidden items** in the View options if needed.
+      </Tab>
+      <Tab title="macOS">
+        From Terminal, open the existing file in TextEdit:
+
+        ```bash
+        open -e .env
+        ```
+
+        Keep it as plain text and save it under its existing name. In Finder, **Command–Shift–.** shows hidden files.
+      </Tab>
+      <Tab title="Linux">
+        Open `.env` in a plain-text editor. Most file managers use **Ctrl–H** to show hidden files.
+
+        If you have nano installed, you can edit it in the terminal:
+
+        ```bash
+        nano .env
+        ```
+
+        In nano, press **Ctrl–O**, then **Enter** to save, and **Ctrl–X** to close.
+      </Tab>
+    </Tabs>
+
+    Find this line:
+
+    ```dotenv
+    POSTGRES_PASSWORD=change-me
     ```
 
+    Replace `change-me` with a long, unique database password. A password manager can generate one; using letters and digits avoids special-character handling in this file. Keep the other settings at their defaults for this local installation, then save.
+
+    **This is the database password.** The app uses it to connect to Postgres. You will choose a separate **owner password** in your browser during [First Run](/first-run).
+
     <Warning>
-      This password protects your database. Choose something real — don't leave it as `change-me`. If you change it after the database volume has already been created, Postgres won't pick up the new value and the stack will fail to start.
+      Set this before the first start. Editing it later does not change the password inside an existing database and can prevent the app from connecting.
     </Warning>
   </Step>
-
-  <Step title="Start the stack">
-    Build the images and bring everything up:
+  <Step title="Start the app">
+    Back in the terminal, run:
 
     ```bash
     docker compose up -d --build --wait
     ```
 
-    The first run builds two images, which takes a couple of minutes. After that, starting the stack takes seconds. The `--wait` flag means the command only returns once all services are healthy — if something goes wrong, you'll see it here rather than discovering it later.
-  </Step>
+    Docker downloads dependencies, builds the app, prepares the database and starts the services. Keep `--build` in the command, including on the first run.
 
-  <Step title="Open plamotrack">
-    Navigate to [http://localhost:8080](http://localhost:8080) in your browser. You'll see a setup screen asking for a one-time token and a password. That's covered on the [First Run](/first-run) page.
+    Wait for the command to finish successfully and return to your terminal prompt. You can check the containers with:
+
+    ```bash
+    docker compose ps -a
+    ```
+
+    The `db`, `api` and `web` services should be running. The `migrate` service prepares the database and then stops: **Exited (0)** is its successful result.
+
+    If startup fails, read the error before continuing. The [troubleshooting guide](/configuration/troubleshooting) covers common problems.
+  </Step>
+  <Step title="Claim your instance">
+    Open [http://localhost:8080](http://localhost:8080) in a browser on the same computer. You should see **Set up plamotrack**.
+
+    Continue to [First Run](/first-run) to find the setup token, choose your owner password and add your first kit.
   </Step>
 </Steps>
 
-## What just started
+## Where the app runs
 
-Running `docker compose up` starts four containers, but only **one port is published to your machine**. Everything else communicates over Docker's internal network and is not reachable from outside the stack.
+By default, only this computer can reach plamotrack. The computer and Docker need to stay running while you use it.
 
-| Address | What it is |
-|---|---|
+| Address | Purpose |
+| --- | --- |
 | `http://localhost:8080` | The app |
-| `http://localhost:8080/api/…` | REST API — e.g. `/api/kits`, or `/api/docs` for interactive docs |
-| `http://localhost:8080/mcp/` | MCP endpoint for AI assistants |
+| `http://localhost:8080/api/kits` | An example REST API route; authentication is required |
+| `http://localhost:8080/mcp/` | The endpoint for compatible AI assistants |
 
-The database and the API container are not exposed externally — they talk to each other over Docker's internal network. You also have a `migrate` container that runs the database migrations and then exits cleanly; if you see it listed as `Exited (0)`, that's success, not a problem.
+Docker publishes one app port. The API and database containers communicate inside the Docker network.
 
-## Changing the port
+To use plamotrack from another device, follow [Local & LAN](/deployment/local-and-lan). For access over the internet, choose a documented [HTTPS deployment](/deployment/vps-caddy) or [Cloudflare Tunnel](/deployment/cloudflare-tunnel).
 
-If port 8080 is already in use on your machine, set `WEB_PORT` in `.env` to any free port, then bring the stack back up:
+## Change the port
 
-```bash
-# in .env
+If another app already uses port 8080, open `.env`, change `WEB_PORT`, and save:
+
+```dotenv
 WEB_PORT=9090
 ```
 
-```bash
-docker compose up -d
-```
-
-## Using your own Postgres
-
-By default plamotrack starts its own Postgres container. If you'd rather use a Postgres instance you already manage, uncomment `DATABASE_URL` in `.env` and set it to your connection string:
+Then apply the change from your `plamotrack` folder:
 
 ```bash
-# in .env
-DATABASE_URL=postgresql+asyncpg://user:password@host:5432/plamotrack
+docker compose up -d --build --wait
 ```
 
-When `DATABASE_URL` is set, the `POSTGRES_*` values only configure the bundled `db` service — you can leave them as-is or ignore them entirely.
+Open `http://localhost:9090` instead, and use that port in the First Run guide too.
 
-<Note>
-  By default plamotrack only listens on `127.0.0.1`, which means only your own machine can connect. To reach it from other devices on your network, or from the internet, see [Deployment](/deployment/local-and-lan) for the supported options and what was tested for each.
-</Note>
+## Use an existing Postgres server
+
+This is optional. The default installation already includes a database.
+
+If you manage a separate Postgres server, `DATABASE_URL` in `.env` can point the API and migrations at it. See the [configuration reference](/configuration/env-reference). The bundled Compose file still starts its own `db` service, so setting `DATABASE_URL` alone does not remove that container or its configuration requirements.
