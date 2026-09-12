@@ -21,13 +21,14 @@ Every kit you track lives in exactly one of these stages at any given time:
 
 "Backlog" means physically in your hands but not yet started. plamotrack is unapologetic about this.
 
-<Frame caption="The light theme uses the same layout as the dark theme. All collection details shown here are invented demo data.">
-  ![Home in the light theme, with active builds, backlog, completed kits and incoming orders.](https://raw.githubusercontent.com/DeusMaximus/plamotrack/d769085ff57148002e87c4410ffeca89d40f5609/docs/screenshots/home-light.png)
-</Frame>
-
 ## The Home page
 
 The Home page divides your collection into four sections, each designed to answer a specific question at a glance.
+
+<Frame caption="Home: the bench first, then the backlog and the shelf, then what's in the mail. All collection details shown here are invented demo data.">
+  <img className="block dark:hidden" src="/images/screenshots/home-light.png" alt="Home, with active builds on the bench, the backlog, recently completed kits and incoming orders." />
+  <img className="hidden dark:block" src="/images/screenshots/home.png" alt="Home, with active builds on the bench, the backlog, recently completed kits and incoming orders." />
+</Frame>
 
 **On the bench** shows every kit currently in Building status. Each card displays the kit's start date, a running day counter, and your most recent build note. If a build is taking longer than expected, you'll know exactly how long.
 
@@ -43,13 +44,16 @@ Order cards open **Edit order**, where **Shipped on** and **Received on** record
 
 ## Filtering and browsing
 
-The list pages — Kits, Orders, and others — support filtering, sorting, and pagination entirely through URL parameters. This means you can bookmark any view you use regularly:
+The list pages — **Kits**, **Orders**, **Inventory** and **Retailers** — each have a search box, filters and a sort control. Whatever you choose is kept in the page's address, so a view you use regularly can be bookmarked and reopens exactly as you left it:
 
 - All kits in backlog
 - Orders from a specific retailer
 - Completed builds in a particular series
 
-Shareable, bookmarkable, and always up to date.
+<Frame caption="Kits, filtered to the backlog. The filter is part of the address, so this view can be bookmarked.">
+  <img className="block dark:hidden" src="/images/screenshots/kits-light.png" alt="The Kits page filtered to Backlog, with the search box, status filter, series filter and sort control above the list." />
+  <img className="hidden dark:block" src="/images/screenshots/kits.png" alt="The Kits page filtered to Backlog, with the search box, status filter, series filter and sort control above the list." />
+</Frame>
 
 <Tip>
   Complete builds carry a start date, finish date, rating (1–5), and a series name you choose yourself. Series names become filters — "all Iron-Blooded Orphans builds" is a real query. Consistent spelling matters, so check your existing series names before adding a new one.

@@ -15,38 +15,69 @@ plamotrack tracks four separate inventory catalogs so you know what you have, wh
   <Card title="Consumables" icon="flask">
     Paints, cement, decal softener, sandpaper. Can carry a low-stock threshold — plamotrack warns you when you're nearly out before the hobby shop closes.
   </Card>
-  <Card title="Upgrade Parts" icon="puzzle-piece">
+  <Card title="Upgrades" icon="puzzle-piece">
     Aftermarket details, resin parts, photo-etch. Can be applied to a specific kit, which decrements stock and records what went where.
   </Card>
-  <Card title="Display Gear" icon="display">
+  <Card title="Display" icon="display">
     Action bases, system stands, diorama scenery. Counted and categorised, but deliberately **not** linked to specific kits — a stand under one model this week is under another next week.
   </Card>
 </CardGroup>
 
-## Adding items
+The four tabs on the **Inventory** page use the same names.
 
-Use the search-and-pick typeahead when adding items to an order or catalog — don't type names freehand.
+## Adding an item
 
-This is intentional. Give a naming-things-at-11pm hobbyist a free text field and within a month you'll own "GM02 Gundam Marker", "Gundam Marker GM02", and "gm02 marker" as three separate stock entries. The typeahead matches against your existing catalog names and keeps everything consistent.
+For something you already own — a first stocktake, a gift, a tool bought before you started tracking — add it straight to its catalog:
 
-If the item genuinely doesn't exist in your catalog yet, the typeahead lets you create it with a proper name, then and there.
+<Steps>
+  <Step title="Pick the catalog">
+    Open **Inventory** in the sidebar and choose the **Tools**, **Consumables**, **Upgrades** or **Display** tab.
+  </Step>
+  <Step title="Describe the item">
+    Click the add button — **Add tool**, **Add consumable**, **Add upgrade** or **Add display item**, matching the tab. Enter a **Name**, a **Category** and the **Quantity on hand**. A consumable can also take a **Low-stock threshold**, an upgrade a **Manufacturer**, and a display item a **Scale**.
+  </Step>
+  <Step title="Save">
+    Click **Add**. The item appears in that tab. Use the **−** and **+** buttons on its row to adjust the count later, or its edit control to change details.
+  </Step>
+</Steps>
+
+## Items bought on an order
+
+For a purchase, add the item as a line on the order instead — see [Add an order](/using/kits-and-orders#add-an-order). The order form's picker searches your existing catalog as you type: choose the match, and its stock is added when the order arrives.
+
+This is intentional. Give a naming-things-at-11pm hobbyist a free text field and within a month you'll own "GM02 Gundam Marker", "Gundam Marker GM02", and "gm02 marker" as three separate stock entries. The picker matches against your existing catalog names and keeps everything consistent. If the item genuinely doesn't exist yet, the picker offers to create it with a proper name, then and there.
 
 ## Low-stock thresholds
 
-On any consumable, set an optional low-stock threshold. When your on-hand quantity drops to or below that number, plamotrack highlights the item in your inventory list. You see the warning while you still have time to order more — not when you're uncapping a bottle that's already dry.
+On any consumable, set an optional low-stock threshold. When your on-hand quantity drops to or below that number, plamotrack shows the count in red with a **restock** tag beside it. You see the warning while you still have time to order more — not when you're uncapping a bottle that's already dry.
 
 To set a threshold, open the consumable's edit dialog and enter a number in the **Low-stock threshold** field. Leave it blank for items you're not tracking closely.
+
+<Frame caption="Consumables, with low-stock thresholds. The cement is below its threshold; the thinner is at 0 because its order has not arrived yet.">
+  <img className="block dark:hidden" src="/images/screenshots/inventory-light.png" alt="The Inventory page on the Consumables tab: one item at 0 on hand, and one below its threshold flagged with a restock tag." />
+  <img className="hidden dark:block" src="/images/screenshots/inventory.png" alt="The Inventory page on the Consumables tab: one item at 0 on hand, and one below its threshold flagged with a restock tag." />
+</Frame>
 
 ## Applying upgrade parts
 
 When an aftermarket part goes on a build, record it:
 
-1. Open the kit's edit dialog (from any list page or card), or navigate to the upgrade part in the inventory page.
-2. Click **Apply to kit** and select the kit.
+1. Open **Inventory** and choose the **Upgrades** tab.
+2. On the part's row, click **Apply to kit**. Choose the **Kit** and the **Quantity**, then click **Apply**.
 
-This decrements the part's stock by 1 and records which kit it went on and when. You now have a complete record of what went where.
+This decrements the part's stock by that quantity and records which kit it went on and when. The record shows under **Applied upgrades** whenever you edit that kit.
 
-To undo this, use **Withdraw application**. plamotrack asks whether the part goes back into stock — useful if you decided against a detail-up or pulled a part from a scrapped build.
+<Frame caption="Apply to kit, from the Upgrades tab.">
+  <img className="block dark:hidden" src="/images/screenshots/upgrade-apply-light.png" alt="The Apply dialog for an upgrade part, with a kit chosen and the quantity set to 1." />
+  <img className="hidden dark:block" src="/images/screenshots/upgrade-apply.png" alt="The Apply dialog for an upgrade part, with a kit chosen and the quantity set to 1." />
+</Frame>
+
+To undo it, edit the kit, find the part under **Applied upgrades** and click **Withdraw…**. plamotrack asks whether the stock comes back: **Withdraw — return to stock** if the part physically survived, or **Withdraw — stock stays spent** if it was used or damaged. Useful when you decided against a detail-up, or pulled a part from a scrapped build.
+
+<Frame caption="Withdrawing an upgrade from the kit editor. Neither choice is pre-selected: whether the part survived is something only you know.">
+  <img className="block dark:hidden" src="/images/screenshots/kit-withdraw-light.png" alt="The Edit kit dialog with an applied upgrade and the withdrawal question showing both choices." />
+  <img className="hidden dark:block" src="/images/screenshots/kit-withdraw.png" alt="The Edit kit dialog with an applied upgrade and the withdrawal question showing both choices." />
+</Frame>
 
 ## Orders and stock
 

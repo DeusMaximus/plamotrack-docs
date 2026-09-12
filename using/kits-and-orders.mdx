@@ -26,6 +26,11 @@ For a gift, trade or kit already on your shelf, a purchase record is optional.
   </Step>
 </Steps>
 
+<Frame caption="Add kit, filled in for a kit that is on the shelf and not started.">
+  <img className="block dark:hidden" src="/images/screenshots/kit-form-light.png" alt="The Add kit dialog with Name, Grade, Scale, Kit number, Series, Status, build dates and build notes." />
+  <img className="hidden dark:block" src="/images/screenshots/kit-form.png" alt="The Add kit dialog with Name, Grade, Scale, Kit number, Series, Status, build dates and build notes." />
+</Frame>
+
 If you plan to record the purchase as an order, use the next section instead. Adding the same models individually as well would create duplicates.
 
 ## Add an order
@@ -56,8 +61,14 @@ If you plan to record the purchase as an order, use the next section instead. Ad
   </Step>
 </Steps>
 
+<Frame caption="New order: a kit line at quantity 2 and a consumable picked from the catalogue. Already in hand is left unticked because this order is still on its way.">
+  <img className="block dark:hidden" src="/images/screenshots/order-form-light.png" alt="The New order dialog with a retailer, order number and delivery service filled in, and two item lines: a kit at quantity 2 and a consumable chosen from the catalogue." />
+  <img className="hidden dark:block" src="/images/screenshots/order-form.png" alt="The New order dialog with a retailer, order number and delivery service filled in, and two item lines: a kit at quantity 2 and a consumable chosen from the catalogue." />
+</Frame>
+
 <Frame caption="Expand an order to see its items. Use its edit control to change details or record delivery dates. The purchase details shown here are invented demo data.">
-  ![Orders list with one order expanded to show kit and inventory lines, quantities and prices.](https://raw.githubusercontent.com/DeusMaximus/plamotrack/d769085ff57148002e87c4410ffeca89d40f5609/docs/screenshots/orders.png)
+  <img className="block dark:hidden" src="/images/screenshots/orders-light.png" alt="The Orders list with one order expanded to show its kit and inventory lines, quantities and prices." />
+  <img className="hidden dark:block" src="/images/screenshots/orders.png" alt="The Orders list with one order expanded to show its kit and inventory lines, quantities and prices." />
 </Frame>
 
 ## Record shipping and arrival
@@ -69,6 +80,11 @@ In the current interface, you record these events through dates in **Edit order*
 3. When the box arrives, open the order again, fill in **Received on** and click **Save changes**. Its kits still in **Pre-ordered**, **Ordered** or **In Transit** move to **Backlog**, and its inventory quantities are added to stock.
 
 You can record the actual past date if you are entering a delivery later. You do not need to record shipping before recording arrival. Kits already moved beyond the waiting stages keep their progress.
+
+<Frame caption="Edit order: Shipped on was recorded when the parcel left. Filling Received on and saving marks the order received, adds its stock and moves its kits to Backlog.">
+  <img className="block dark:hidden" src="/images/screenshots/order-edit-light.png" alt="The Edit order dialog with Shipped on already filled and Received on being set to today." />
+  <img className="hidden dark:block" src="/images/screenshots/order-edit.png" alt="The Edit order dialog with Shipped on already filled and Received on being set to today." />
+</Frame>
 
 ## Edit a kit or order
 

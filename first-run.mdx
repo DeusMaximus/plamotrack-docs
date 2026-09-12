@@ -39,6 +39,11 @@ These steps use the default password login. If you have deliberately configured 
     Open [http://localhost:8080](http://localhost:8080) on the same computer. If you changed the port during installation, use that port.
 
     The heading should be **Set up plamotrack**. A **Sign in** heading means the instance has already been claimed.
+
+    <Frame caption="The setup screen. The token comes from the API log; the password is the one you will sign in with.">
+      <img className="block dark:hidden" src="/images/screenshots/setup-light.png" alt="The Set up plamotrack screen, with Setup token, Password and Confirm password fields and a Create owner button." />
+      <img className="hidden dark:block" src="/images/screenshots/setup.png" alt="The Set up plamotrack screen, with Setup token, Password and Confirm password fields and a Create owner button." />
+    </Frame>
   </Step>
   <Step title="Create the owner">
     Fill in all three fields:
@@ -69,9 +74,23 @@ For a kit you already own, you can start without recording a purchase:
 
 Your kit now appears in **Kits** and the **Backlog** section on Home. When you start the build, edit it and change **Status** to **Building**.
 
+<Frame caption="Add kit: only Name and Grade are required.">
+  <img className="block dark:hidden" src="/images/screenshots/kit-form-light.png" alt="The Add kit dialog with Name, Grade, Scale, Kit number, Series and Status filled in." />
+  <img className="hidden dark:block" src="/images/screenshots/kit-form.png" alt="The Add kit dialog with Name, Grade, Scale, Kit number, Series and Status filled in." />
+</Frame>
+
 <Tip>
   If you want to record the purchase too, [add an order](/using/kits-and-orders#add-an-order) instead. An order creates its own kit records, so you do not need to add those kits a second time.
 </Tip>
+
+## Set your currency and time zone
+
+A new instance starts with Australian defaults: prices in `AUD`, dates and numbers formatted for `en-AU`, and the `UTC` time zone. If that is not where you are, change it now, before you record an order:
+
+1. Open **Settings → General** and set **Currency code** to the currency you buy in, such as `USD` or `JPY`, then click **Save**. New orders default to it. Amounts already recorded keep the currency they were entered with.
+2. Open **Settings → Language & region**. Set **Time zone** to your IANA zone name, such as `America/Chicago` or `Europe/London`, and **Formatting locale** to how you want dates and numbers written, such as `en-US`. Click **Save**.
+
+These settings belong to the instance, not the browser, so every device and connected AI assistant sees the same values. See [Settings](/using/settings) for the full list.
 
 <CardGroup cols={2}>
   <Card title="Kits and orders" icon="plus" href="/using/kits-and-orders">
@@ -86,8 +105,9 @@ Your kit now appears in **Kits** and the **Backlog** section on Home. When you s
 
 Use your owner password when the app asks you to sign in. You do not need another setup token.
 
-<Frame caption="After setup, the Sign in screen asks for your owner password.">
-  ![plamotrack Sign in screen with a Password field and Sign in button.](https://raw.githubusercontent.com/DeusMaximus/plamotrack/d769085ff57148002e87c4410ffeca89d40f5609/docs/screenshots/sign-in.png)
+<Frame caption="After setup, the Sign in screen asks only for your owner password.">
+  <img className="block dark:hidden" src="/images/screenshots/sign-in-light.png" alt="The plamotrack Sign in screen with a Password field and a Sign in button." />
+  <img className="hidden dark:block" src="/images/screenshots/sign-in.png" alt="The plamotrack Sign in screen with a Password field and a Sign in button." />
 </Frame>
 
 ## Forgot your password?
