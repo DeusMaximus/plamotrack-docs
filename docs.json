@@ -32,6 +32,16 @@
             ]
           },
           {
+            "group": "Using plamotrack",
+            "pages": [
+              "using/home-and-pipeline",
+              "using/kits-and-orders",
+              "using/inventory",
+              "using/retailers",
+              "using/import-export"
+            ]
+          },
+          {
             "group": "Deployment",
             "pages": [
               "deployment/local-and-lan",
@@ -47,16 +57,6 @@
               "authentication/password-login",
               "authentication/oidc",
               "authentication/access-tokens"
-            ]
-          },
-          {
-            "group": "Using plamotrack",
-            "pages": [
-              "using/home-and-pipeline",
-              "using/kits-and-orders",
-              "using/inventory",
-              "using/retailers",
-              "using/import-export"
             ]
           },
           {
