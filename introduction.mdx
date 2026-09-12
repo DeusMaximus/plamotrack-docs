@@ -4,7 +4,11 @@ sidebarTitle: "Introduction"
 description: "plamotrack is a self-hosted kit tracker for Gunpla and plastic models. Track orders, inventory, and builds — and chat with Claude about your collection."
 ---
 
-plamotrack is a self-hosted collection and build tracker for Gunpla and plastic model kits. It takes every kit from pre-order through to panel-lined masterpiece, counts your nippers and cement along the way, rates the shops you buy from, and — because sometimes clicking things is the worst part of the hobby — comes with a built-in MCP server so you can just tell Claude what arrived instead. Your data lives in your own Postgres, on your own hardware, and leaves as plain CSV whenever you want it. Nothing is in anyone else's cloud.
+plamotrack is a self-hosted collection and build tracker for Gunpla and plastic model kits. It takes every kit from pre-order through to panel-lined masterpiece, counts your nippers and cement along the way, rates the shops you buy from, and — because sometimes clicking things is the worst part of the hobby — comes with a built-in MCP server so you can just tell Claude what arrived instead. You run plamotrack on a computer or server you control, and you can export your collection as plain CSV whenever you want it. Connecting an AI assistant is optional.
+
+<Frame caption="Home brings your current builds, backlog and incoming orders together. This screenshot uses invented demo data.">
+  ![plamotrack Home in the dark theme, showing On the bench, Backlog, Recently completed and In the mail.](https://raw.githubusercontent.com/DeusMaximus/plamotrack/d769085ff57148002e87c4410ffeca89d40f5609/docs/screenshots/home.png)
+</Frame>
 
 <CardGroup cols={2}>
   <Card
@@ -12,7 +16,7 @@ plamotrack is a self-hosted collection and build tracker for Gunpla and plastic 
     icon="rocket"
     href="/installation"
   >
-    Get up and running in about three minutes with Docker.
+    Install Docker and Git, then follow the steps to start your own instance.
   </Card>
   <Card
     title="Connect Your AI Assistant"
@@ -35,7 +39,7 @@ plamotrack is a self-hosted collection and build tracker for Gunpla and plastic 
 
 ## What plamotrack tracks
 
-plamotrack is built around five interconnected pillars, each designed around how hobbyists actually think about their collections.
+Keep track of what's on the bench, what's still in its box, and what's on the way.
 
 **Kits & Build Pipeline.** Every kit moves through six statuses — pre-ordered, ordered, in transit, backlog, building, complete — and the Home dashboard reads them the way a Sunday afternoon does. The bench shows what you're actively building with start dates and a day counter; the backlog and recently completed sections give you the true count at a glance; and "in the mail" shows every order still in flight with retailer, carrier, and tracking number.
 
