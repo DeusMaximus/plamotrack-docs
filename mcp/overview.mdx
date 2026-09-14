@@ -4,7 +4,7 @@ sidebarTitle: "Overview"
 description: "plamotrack has a built-in MCP server — no plugin to install. Connect Claude, ChatGPT, or Gemini Spark and manage your collection by talking to it."
 ---
 
-plamotrack ships with a Model Context Protocol (MCP) server built in — same process, no separate service to install or run. Point Claude, ChatGPT, or any MCP-compatible AI assistant at your instance and you can manage your collection in natural language: log an order from an email, mark a parcel received, check what's on your bench — all by talking.
+plamotrack ships with a Model Context Protocol (MCP) server built in — same process, no separate service to install or run. Point Claude, ChatGPT, Gemini Spark, Mistral or any MCP-compatible AI assistant at your instance and you can manage your collection in natural language: log an order from an email, mark a parcel received, check what's on your bench — all by talking.
 
 <Note>
   MCP (Model Context Protocol) is an open standard that lets AI assistants connect to external services. plamotrack implements it natively — no plugin, no middleware, no separate process.
@@ -25,9 +25,32 @@ Your AI assistant has access to over 30 tools covering your entire collection. H
     Create a token in **Settings → Access tokens**, then paste it into your AI client's config. Works with Claude Desktop, Claude Code, and any client that can send an HTTP header. Best for local and LAN instances.
   </Card>
   <Card title="OAuth sign-in" icon="arrow-right-to-bracket" href="/mcp/claude-web-chatgpt">
-    For Claude.ai and ChatGPT on the web. Requires OIDC mode and TLS. You sign in through your identity provider — no token to paste or store.
+    For Claude.ai, ChatGPT, Gemini Spark and Mistral on the web. Requires OIDC mode and TLS. You sign in through your identity provider — no token to paste or store.
   </Card>
 </CardGroup>
+
+## Which clients work
+
+Every client below was connected to a plamotrack instance behind TLS on the current release, then used to list the tools and call one. For Claude Desktop, that check drove the `mcp-remote` bridge its guide configures.
+
+| Client | How it connects | Guide |
+|---|---|---|
+| Claude.ai (web) | OAuth sign-in | [Web clients](/mcp/claude-web-chatgpt) |
+| ChatGPT (web) | OAuth sign-in | [Web clients](/mcp/claude-web-chatgpt) |
+| Gemini Spark | OAuth sign-in | [Web clients](/mcp/claude-web-chatgpt#connecting-gemini-spark) |
+| Mistral Le Chat | OAuth sign-in | [Web clients](/mcp/claude-web-chatgpt#connecting-mistral) |
+| MCP Inspector | OAuth sign-in | the same connector URL, **Streamable HTTP** transport |
+| Claude Code | Personal access token | [Claude Code](/mcp/claude-desktop#claude-code) |
+| Claude Desktop | Personal access token through `mcp-remote` | [Claude Desktop](/mcp/claude-desktop#claude-desktop) |
+| Anything else that speaks MCP over HTTP | Personal access token in the `Authorization` header | [Access tokens](/authentication/access-tokens) |
+
+## Protocol versions
+
+The MCP protocol has two generations in use: the current revision, where each request stands on its own, and the earlier one, where a client opens a session with a handshake first. plamotrack serves both from the same `/mcp/` endpoint and lets each client choose, request by request. There is nothing to configure and nothing to keep in step: an older client keeps working when the assistant behind it updates, and a newer one gets the newer transport on its first call.
+
+<Note>
+  At the time of writing, Claude.ai and Claude Code use the current revision; ChatGPT, Gemini Spark, Mistral and MCP Inspector use the previous one. Either way, the tools and what they do are identical.
+</Note>
 
 ## The MCP endpoint
 

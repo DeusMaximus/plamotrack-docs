@@ -13,7 +13,7 @@ When your AI assistant connects to plamotrack, it has access to over 30 tools or
 ## Collection overview
 
 <Accordion title="get_meta">
-  Returns the app version and the instance's reference currency — the currency an omitted `currency_code` defaults to when logging orders.
+  Returns the app version and the instance's reference currency — the currency an order's own `currency_code` defaults to when you omit it while logging an order.
 </Accordion>
 
 <Accordion title="get_summary">
@@ -95,7 +95,7 @@ These tools cover tools, consumables, upgrade parts, and display gear.
 ## Orders
 
 <Accordion title="create_order">
-  Creates a full order with line items. Kit lines fan out into individual kit rows (two Zakus on one line becomes two separate kits in your collection). Retailers are matched by name or created automatically if they don't exist yet.
+  Creates a full order with line items. Kit lines fan out into individual kit rows (two Zakus on one line becomes two separate kits in your collection). Retailers are matched by name or created automatically if they don't exist yet. Every item line carries its own `currency_code`; only the order-level `currency_code` may be omitted, in which case the instance's reference currency is used.
 </Accordion>
 
 <Accordion title="list_orders">
