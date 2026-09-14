@@ -63,9 +63,9 @@ You should get back `{"status":"ok"}`. Then open the app in your browser and cla
 
 ## MCP and AI assistants
 
-Once plamotrack is behind TLS with `PUBLIC_BASE_URL` set, you can connect Claude web and ChatGPT web directly from their connector dialogs — just paste `https://plamotrack.example/mcp/` as the MCP URL.
+Once plamotrack is behind TLS with `PUBLIC_BASE_URL` set, you can connect Claude web, ChatGPT web, Gemini Spark and Mistral directly from their connector dialogs — just paste `https://plamotrack.example/mcp/` as the MCP URL.
 
-In [OIDC Login](/authentication/oidc) mode (`AUTH_MODE=oidc`), Claude web and ChatGPT web can sign in without you pasting a token: they discover the instance as an OAuth server, send you to your identity provider, and receive their own access tokens. Personal access tokens continue to work in this mode too.
+In [OIDC Login](/authentication/oidc) mode (`AUTH_MODE=oidc`), those web clients can sign in without you pasting a token: they discover the instance as an OAuth server, send you to your identity provider, and receive their own access tokens. Personal access tokens continue to work in this mode too.
 
 <Note>
   Cloudflare enforces a 125-second limit on the time to a response's first

@@ -35,6 +35,19 @@ If you checked out a release tag instead of `main`, select the published tag you
 
 ## Changelog
 
+<Update label="v0.4.1-alpha" description="15 September 2026">
+  ## MCP: the current protocol revision, without dropping older clients
+
+  - **Both MCP protocol generations from one endpoint.** The server now speaks the current MCP revision as well as the earlier handshake revisions, and each client chooses per request. Nothing to configure. See [Protocol versions](/mcp/overview#protocol-versions).
+  - **Tested clients:** Claude.ai, ChatGPT, Gemini Spark, Mistral and MCP Inspector by OAuth sign-in; Claude Code and the `mcp-remote` bridge from the Claude Desktop guide by personal access token. The OAuth clients were linked before this update and were still linked after it, after a restart and after a restore from backup; the token clients used a token minted before it. See [Which clients work](/mcp/overview#which-clients-work).
+
+  **Update notes:** From 0.4.0, there are no new migrations, authentication changes or settings. Run the normal update. Connected AI clients stay connected and personal access tokens keep working. An instance updated from 0.3.x or 0.4.0 may hold a stored copy of Claude.ai's or ChatGPT's client description from before; it is used until the first fresh fetch and then removed — nothing to do. Returning to `v0.4.0-alpha` only requires checking out that tag and rebuilding; the two versions use the same database schema.
+
+  **Known limitations at release:** A client description that reached the instance through an intermediate cache is kept for its full lifetime from the moment it arrived, rather than for the remainder ([#249](https://github.com/DeusMaximus/plamotrack/issues/249)). The order-dialog limitation from 0.4.0 is still open ([#238](https://github.com/DeusMaximus/plamotrack/issues/238)).
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.4.1-alpha)
+</Update>
+
 <Update label="v0.4.0-alpha" description="10 September 2026">
   ## The Workbench interface
 

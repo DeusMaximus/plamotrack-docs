@@ -1,7 +1,7 @@
 ---
 title: "Sign in with Google, Keycloak, or any OIDC provider"
 sidebarTitle: "OIDC Login"
-description: "Set up OpenID Connect in plamotrack to sign in through Google, Keycloak, or Authentik. Required for Claude web and ChatGPT OAuth MCP connections."
+description: "Set up OpenID Connect in plamotrack to sign in through Google, Keycloak, or Authentik. Required for OAuth MCP connections from Claude web, ChatGPT, Gemini Spark and Mistral."
 ---
 
 OIDC mode replaces the password with a sign-in at an external identity provider — Google, Keycloak, Authentik, or any OpenID Connect-compatible service. It is also required if you want Claude web or ChatGPT web to connect to your MCP server without you pasting a token into them. Once configured, the account you sign in with at the provider becomes the owner of the instance — no password is ever set.
@@ -25,7 +25,7 @@ Use the issuer URL exactly as your provider's discovery document states it. Even
 Create an OAuth/OIDC client (also called an "application") in your provider's dashboard. Configure it with these two redirect URIs:
 
 - **Browser login:** `<PUBLIC_BASE_URL>/api/auth/oidc/callback`
-- **MCP clients (Claude web, ChatGPT web):** `<PUBLIC_BASE_URL>/mcp/auth/callback`
+- **MCP clients (Claude web, ChatGPT web, Gemini Spark, Mistral):** `<PUBLIC_BASE_URL>/mcp/auth/callback`
 
 The client must be the **only audience** of the ID tokens it issues. Do not attach other clients' audience mappers to it — a token naming an additional audience is refused by plamotrack.
 
@@ -42,7 +42,7 @@ OIDC_ISSUER=https://accounts.google.com      # your provider's issuer URL exactl
 OIDC_CLIENT_ID=your-client-id
 OIDC_CLIENT_SECRET=your-client-secret
 
-# For MCP OAuth (Claude web, ChatGPT web):
+# For MCP OAuth (Claude web, ChatGPT web, Gemini Spark, Mistral):
 MCP_OAUTH_SIGNING_KEY=<64 hex chars>   # run: openssl rand -hex 32
 ```
 

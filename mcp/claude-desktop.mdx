@@ -72,6 +72,8 @@ claude mcp add --transport http plamotrack http://localhost:8080/mcp/ \
   --header "Authorization: Bearer ptk_your_token_here"
 ```
 
+Claude Code talks to the endpoint directly, no bridge needed, and picks the current MCP protocol revision on its own. There is nothing else to configure.
+
 ## Verifying the connection
 
 Once connected, try asking Claude one of these to confirm everything is working:
@@ -83,4 +85,8 @@ Claude should call plamotrack's tools and answer based on your actual collection
 
 <Tip>
   If your instance isn't on `localhost` — for example, it's on a LAN hostname like `nas.lan` — make sure that hostname is listed in `ALLOWED_HOSTS` in your `.env` file. Without it, plamotrack returns `421 Misdirected Request` and the connection fails. See [Local & LAN](/deployment/local-and-lan) for details.
+</Tip>
+
+<Tip>
+  A client configured without a token is refused at its very first request, whichever protocol revision it speaks. If Claude reports that the server needs authentication, check that the `Authorization` header or the `env` value carries `Bearer ptk_…` with the space in between.
 </Tip>

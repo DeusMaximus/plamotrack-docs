@@ -1,14 +1,14 @@
 ---
-title: "Connect Claude.ai or ChatGPT to plamotrack via OAuth"
-sidebarTitle: "Claude Web & ChatGPT"
-description: "Connect the Claude.ai or ChatGPT web apps to plamotrack's MCP server using OAuth sign-in. Requires OIDC mode and a publicly reachable HTTPS instance."
+title: "Connect Claude.ai, ChatGPT, Gemini or Mistral to plamotrack via OAuth"
+sidebarTitle: "Web clients (OAuth)"
+description: "Connect the Claude.ai, ChatGPT, Gemini Spark or Mistral web apps to plamotrack's MCP server using OAuth sign-in. Requires OIDC mode and a publicly reachable HTTPS instance."
 ---
 
-Claude.ai and ChatGPT on the web can connect to plamotrack as a custom connector — without you pasting a token. Instead, they use OAuth: you're redirected to sign in at your identity provider (Google, Keycloak, Authentik, etc.) and the client receives its own access tokens. This requires OIDC mode and a public HTTPS URL.
+Claude.ai, ChatGPT, Gemini Spark and Mistral on the web can connect to plamotrack as a custom connector — without you pasting a token. Instead, they use OAuth: you're redirected to sign in at your identity provider (Google, Keycloak, Authentik, etc.) and the client receives its own access tokens. This requires OIDC mode and a public HTTPS URL.
 
 ## Requirements
 
-Before you connect Claude.ai or ChatGPT, make sure all of these are in place:
+Before you connect a web client, make sure all of these are in place:
 
 - plamotrack running in OIDC mode (`AUTH_MODE=oidc`) — see [OIDC Login](/authentication/oidc)
 - TLS in front of your instance, with `PUBLIC_BASE_URL` set to an `https://` address — see [VPS + Caddy](/deployment/vps-caddy) or [Cloudflare Tunnel](/deployment/cloudflare-tunnel)
@@ -47,6 +47,22 @@ Before you connect Claude.ai or ChatGPT, make sure all of these are in place:
 
 Follow the same steps, starting from **Settings → Connectors** in ChatGPT, and enter the same connector URL (`https://your-instance.example/mcp/`). The sign-in flow is identical.
 
+## Connecting Gemini Spark
+
+In Gemini Spark, open **Connected apps**, add a custom app, and enter the same connector URL. Gemini registers itself with your instance and sends you to your identity provider to sign in.
+
+<Note>
+  Gemini sometimes stops after the sign-in step without finishing the connection. If the app shows as not connected, add it again — the second attempt goes through, and the abandoned first attempt leaves nothing behind on your instance.
+</Note>
+
+## Connecting Mistral
+
+In Le Chat at `chat.mistral.ai`, add an MCP connector with the same connector URL and sign in when prompted. The flow is the same as for Gemini.
+
+## What happens after an update or a restore
+
+A connected client stays connected across a plamotrack update, a restart, and a restore from backup taken with the same `.env`. It refreshes its own access quietly; you are not asked to sign in again. If a client does ask you to reconnect, the usual causes are a changed `MCP_OAUTH_SIGNING_KEY`, a restore from a backup taken before the client was linked, or a link you ended yourself. [Backups](/configuration/backups) lists which half of a backup keeps which links.
+
 ## What access does the connected client get?
 
 Each connected client gets read and write access to your collection — the same as a read-and-write personal access token. It can log orders, move kits, adjust stock, and look up anything in your collection.
@@ -64,5 +80,5 @@ To revoke all OAuth-linked MCP clients at once — for example, if you're changi
 </Note>
 
 <Note>
-  Gemini Spark and other AI assistants that support MCP OAuth should work the same way — add the connector URL `https://your-instance.example/mcp/` in their settings and sign in when prompted.
+  Other AI assistants that support MCP OAuth should work the same way — add the connector URL `https://your-instance.example/mcp/` in their settings and sign in when prompted. MCP Inspector, for example, connects with its **Streamable HTTP** transport and the same URL.
 </Note>
