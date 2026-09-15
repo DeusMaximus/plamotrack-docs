@@ -57,11 +57,11 @@ In Gemini Spark, open **Connected apps**, add a custom app, and enter the same c
 
 ## Connecting Mistral
 
-In Le Chat at `chat.mistral.ai`, add an MCP connector with the same connector URL and sign in when prompted. The flow is the same as for Gemini.
+In Mistral's Vibe Chat (formerly Le Chat) at `chat.mistral.ai`, add an MCP connector with the same connector URL and sign in when prompted. The flow is the same as for Gemini.
 
 ## What happens after an update or a restore
 
-A connected client stays connected across a plamotrack update, a restart, and a restore from backup taken with the same `.env`. It refreshes its own access quietly; you are not asked to sign in again. If a client does ask you to reconnect, the usual causes are a changed `MCP_OAUTH_SIGNING_KEY`, a restore from a backup taken before the client was linked, or a link you ended yourself. [Backups](/configuration/backups) lists which half of a backup keeps which links.
+A connected client stays connected across a plamotrack update, a restart, and a restore from backup taken with the same `.env`. It refreshes its own access quietly; you are not asked to sign in again. If a client does ask you to reconnect, the usual causes are a changed `MCP_OAUTH_SIGNING_KEY` or `PUBLIC_BASE_URL` (both are part of the instance's identity), a restore from a backup taken before the client was linked, or a link you ended yourself. [Backups](/configuration/backups) lists which half of a backup keeps which links.
 
 ## What access does the connected client get?
 
@@ -71,7 +71,7 @@ It cannot change instance settings, run a replace-all import, or manage access t
 
 ## Removing a connected client
 
-To disconnect a client, revoke its access in your identity provider's settings — go to the provider's connected apps or authorised clients page and remove the plamotrack entry. The client's access ends the next time it tries to refresh its token.
+To disconnect a client, remove the connector in the client itself. It revokes its token, and plamotrack ends the whole grant at once — the access token, the refresh token and, best effort, the provider's own refresh token behind it — whatever the provider is doing at the time. Revoking plamotrack's access in your identity provider's settings instead (its connected apps or authorised clients page) has the same effect once the client's token next comes up for refresh, as does a refresh the provider answers with a different identity.
 
 To revoke all OAuth-linked MCP clients at once — for example, if you're changing identity providers — use the **rebind-oidc** recovery command described under [OIDC Login](/authentication/oidc#lost-access-to-your-provider-account). This clears every MCP grant and, best effort, revokes the provider's refresh tokens behind them. Your collection data, browser session, and personal access tokens are untouched. Any client that was linked can sign in again once you've reclaimed the instance.
 
@@ -82,3 +82,13 @@ To revoke all OAuth-linked MCP clients at once — for example, if you're changi
 <Note>
   Other AI assistants that support MCP OAuth should work the same way — add the connector URL `https://your-instance.example/mcp/` in their settings and sign in when prompted. MCP Inspector, for example, connects with its **Streamable HTTP** transport and the same URL.
 </Note>
+
+## Registration limits and edge cases
+
+Any client can register itself with your instance in this mode, so a registration is bounded. None of the bounds touch a client that has completed its sign-in.
+
+- Clients that register themselves are registered as **public** clients — PKCE, no client secret — whatever they ask for, and the registration response says so. A secret would add nothing when anyone can register.
+- A registration lives **24 hours unless a sign-in links it**. A client that registers and never finishes signing in is forgotten; one that does is kept for as long as it is linked.
+- One address may register **twenty clients an hour** (`429` past that); the instance keeps at most **1024 live registrations** (`503` with `Retry-After` past that, until unlinked ones expire); and a request body to any of the OAuth routes is capped at **16 KiB**.
+
+Claude.ai and ChatGPT do not register at all. They bring a client description document of their own, which the instance fetches when the client shows up and keeps in memory for as long as the document's own cache headers allow — an hour when they say nothing — before fetching it again. A flood of registrations therefore cannot lock those clients out. The flip side: while such a client's document cannot be fetched — its host unreachable from your instance, and no fresh copy in memory, after a restart for example — that client's own token refresh and revocation are refused with `401 invalid_client`. Nothing is lost by it: the client's access token keeps working, the instance still refreshes the grant with your provider behind that token, and the same refresh succeeds once the document is reachable again. An instance updated from 0.3.x or 0.4.0, or restored from a backup taken on one, may hold a stored copy of such a document from before; it is used as the fallback until the first successful fetch and removed then — nothing to do.

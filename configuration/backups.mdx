@@ -10,6 +10,14 @@ Your collection lives in a Postgres database inside the Docker stack. There are 
 
 Go to **Settings → Data management → Export** and download the ZIP archive. This is a CSV export — it's human-readable and can be imported back into plamotrack. For a complete database backup that preserves sessions, access tokens, and MCP client links, use the `pg_dump` method below.
 
+A script can fetch the same archive with a [personal access token](/authentication/access-tokens); read-only is enough:
+
+```bash
+curl -H "Authorization: Bearer ptk_…" -o plamotrack-archive.zip http://127.0.0.1:8080/api/export/archive
+```
+
+The archive is read from a single database snapshot, so an export taken while an assistant is adding an order gives you the collection as it stood when the export began, never a mix of before and after. It never carries credentials, so it is safe to keep anywhere, and it still opens in a future version whose schema has moved on — though it restores more slowly than a dump and does not preserve ids exactly. Keep both: the dump is what you restore from on Sunday; the archive is what still opens in three years. See [Import & Export](/using/import-export) for the format.
+
 ## Database backup with pg_dump
 
 Run the following command from your plamotrack directory. The dump file is a portable Postgres archive.
@@ -19,6 +27,8 @@ docker compose exec -T db sh -c \
   'exec pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB"' \
   > plamotrack-$(date +%F).dump
 ```
+
+The quoted variables are expanded inside the database container, so the command follows the `POSTGRES_USER` and `POSTGRES_DB` values in your `.env` rather than assuming the defaults. The restore below does the same.
 
 <Note>
   A backup is two things: the dump file **and** your `.env`. Keep them together. The `.env` holds the secrets (your database password and, in OIDC mode, `MCP_OAUTH_SIGNING_KEY`) that make the backup fully restorable.
@@ -42,6 +52,8 @@ Restore into an empty database — `pg_restore` will not merge cleanly into a po
     ```bash
     docker compose up -d db --wait
     ```
+
+    `--wait` returns only once the real server is listening, so the restore cannot land while the image is still running its first-start setup.
   </Step>
   <Step title="Restore the dump">
     ```bash
@@ -66,6 +78,8 @@ What comes back depends on which half of the backup you restore and which `.env`
 | Dump + same `.env` | ✅ intact | ✅ still signed in | ✅ still valid | ✅ still linked |
 | Dump + different `.env` | ✅ intact | ✅ still signed in | ✅ still valid | ⚠️ clients re-authorise once |
 | Dump taken before a client was linked | ✅ intact | ✅ still signed in | ✅ still valid | ⚠️ that client re-authorises |
+
+Sessions and tokens survive a changed `.env` because they are stored as digests, not signatures; only the OAuth state is encrypted under `MCP_OAUTH_SIGNING_KEY`. Restoring without the original `.env` at all — a fresh one with a new database password — still works: the password only matters when the volume is first created, which the restore does, and the second row then applies.
 
 <Warning>
   Never run `docker compose down -v` unless you intend to delete the database. The `-v` flag deletes Docker volumes including your Postgres data. Running `docker compose down` without `-v` is safe — the volume survives.

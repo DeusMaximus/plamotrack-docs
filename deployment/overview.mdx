@@ -1,0 +1,31 @@
+---
+title: "Choose how to run plamotrack: four deployment options"
+sidebarTitle: "Overview"
+description: "Your own machine or a private network, your own reverse proxy, a Cloudflare Tunnel, or a VPS behind Caddy — what each needs in .env, and what was tested for it."
+---
+
+By default plamotrack listens on `127.0.0.1` and answers only to names it knows, so a fresh install is reachable from the machine that runs it and nowhere else. Four settings in `.env` decide who can reach an instance and by what name — `WEB_BIND`, `ALLOWED_HOSTS`, `PUBLIC_BASE_URL` and `TRUSTED_PROXIES`, each explained in the [configuration reference](/configuration/env-reference#the-four-network-settings-in-detail). The four ways people run it map onto them like this.
+
+| Way | Reached from | `.env` | Tested |
+| --- | --- | --- | --- |
+| [Your own machine, or a private network](/deployment/local-and-lan) | that machine; every device on the mesh or LAN | `WEB_BIND` (plus `ALLOWED_HOSTS` off the machine) | Yes — every automated test run is the loopback case; the LAN case is the same stack with two more lines |
+| [Behind your own reverse proxy](/deployment/reverse-proxy) | whatever the proxy is | `PUBLIC_BASE_URL`, `TRUSTED_PROXIES` | The contract is documented; no proxy other than Caddy was run |
+| [Behind a Cloudflare Tunnel](/deployment/cloudflare-tunnel) | the internet, via Cloudflare | `WEB_BIND`, `PUBLIC_BASE_URL`, `TRUSTED_PROXIES` | Yes, with the connector on another machine |
+| [On a VPS behind Caddy](/deployment/vps-caddy) — **the reference** | the internet | `PUBLIC_BASE_URL`, `TRUSTED_PROXIES` | Yes — this is the configuration every release is checked against |
+
+"Tested" means the deployment checks in the plamotrack repository ran against that configuration before the release these pages describe. The results are in that release's notes on GitHub.
+
+## Plain HTTP or TLS
+
+Plain HTTP carries the session cookie and any token in clear text. The first and third ways have a plain-HTTP hop on *your* network — between your devices and the instance, or between the tunnel connector and the instance. The second and fourth terminate TLS in front of the stack, so the only plain-HTTP hop is on the host itself.
+
+What plamotrack does in every case: the owner login, the access tokens, the allowed-hosts check, the rate limits and the [audit log](/configuration/audit-log). What it never does: open a port you didn't ask for.
+
+## Unsupported
+
+These are not documented ways to run it, and the docs say so rather than leaving it to be discovered:
+
+- `WEB_BIND=0.0.0.0` on a public interface without TLS in front.
+- Publishing the API container's port `8000` directly. The bundled `web` container (nginx) is part of the security model — route separation, default-deny on unlisted paths and the per-client rate limits — and the API assumes it is there.
+- A proxy in front of the stack that is not named in `TRUSTED_PROXIES`. Forwarded headers are then ignored: the rate limits key on the proxy's address and the audit log records it. A degradation, not a bypass.
+- Changing `PUBLIC_BASE_URL` on an instance with connected AI clients without reconnecting them. It is part of the instance's identity, and every OAuth link is invalid once it changes.

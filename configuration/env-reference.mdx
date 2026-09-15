@@ -17,29 +17,31 @@ Every plamotrack setting lives in `.env` at the root of the plamotrack folder �
 | `POSTGRES_PASSWORD` | — | Required. Your database password. Only read when the database is first created. |
 | `POSTGRES_USER` | `plamotrack` | Database user. |
 | `POSTGRES_DB` | `plamotrack` | Database name. |
-| `DATABASE_URL` | — | Set this to use an existing Postgres you manage yourself. |
+| `DATABASE_URL` | — | Set this to use an existing Postgres you manage yourself. The `POSTGRES_*` values then only configure the bundled `db` service. |
 
 ## Network & hosting
 
+These four settings decide who can reach the instance and by what name. The [deployment overview](/deployment/overview) maps the four ways of running it onto them, and [the details](#the-four-network-settings-in-detail) are below the tables.
+
 | Key | Default | What it does |
 |---|---|---|
-| `WEB_BIND` | `127.0.0.1` | Which network interface to listen on. Keep on `127.0.0.1` behind a proxy on the same host. See [Local & LAN](/deployment/local-and-lan). |
-| `WEB_PORT` | `8080` | Port for the UI, API, and MCP endpoint. |
-| `ALLOWED_HOSTS` | — | Comma-separated hostnames the instance will respond to (e.g. `nas.lan,plamotrack.home.arpa`). Wildcards like `*.home.arpa` work. See [Local & LAN](/deployment/local-and-lan). |
-| `PUBLIC_BASE_URL` | — | The `https://` address users see in their browser. Required behind a TLS proxy. See [Reverse Proxy](/deployment/reverse-proxy). |
-| `TRUSTED_PROXIES` | — | IP of a reverse proxy or Cloudflare connector on the same host (`127.0.0.1`) or another machine (its IP). |
-| `ALLOWED_ORIGINS` | — | Extra browser origins allowed to write. Rarely needed. |
+| `WEB_BIND` | `127.0.0.1` | The interface the one published port listens on. `127.0.0.1` means only the host itself can connect. See [Local & LAN](/deployment/local-and-lan). |
+| `WEB_PORT` | `8080` | The published port, for the UI, `/api` and `/mcp`. |
+| `ALLOWED_HOSTS` | — | The names the instance answers to, comma-separated, without ports (e.g. `nas.lan,plamotrack.home.arpa`). Any other name gets `421 Misdirected Request`. |
+| `PUBLIC_BASE_URL` | — | The address a browser uses when it is not `http://localhost:<WEB_PORT>` — scheme, host and port, nothing after. Required behind a TLS proxy or tunnel, and required as `https://` in OIDC mode. |
+| `TRUSTED_PROXIES` | — | IPs or CIDR ranges of a reverse proxy or tunnel connector whose `X-Forwarded-For` should be believed: `127.0.0.1` for one on this host, its own address for one on another machine. Leave empty when clients connect directly. |
+| `ALLOWED_ORIGINS` | — | Extra browser origins allowed to write, beyond the instance's own and loopback ones. Rarely needed. |
 
 ## Authentication
 
 | Key | Default | What it does |
 |---|---|---|
-| `AUTH_MODE` | `local` | `local`: password login. `oidc`: sign in via an identity provider. |
-| `OIDC_ISSUER` | — | OIDC mode. Your provider's issuer URL (e.g. `https://accounts.google.com`). |
-| `OIDC_CLIENT_ID` | — | OIDC mode. Your provider's client ID. |
-| `OIDC_CLIENT_SECRET` | — | OIDC mode. Your provider's client secret. |
-| `MCP_OAUTH_SIGNING_KEY` | — | OIDC mode. 32 random bytes as 64 hex chars. Generate with `openssl rand -hex 32`. Signs tokens for Claude web / ChatGPT OAuth. |
-| `MCP_OAUTH_ALLOWED_REDIRECT_URIS` | — | Optional. Restrict which callback URIs MCP clients may register. Leave unset unless you have a reason. |
+| `AUTH_MODE` | `local` | `local`: the setup token and a password. `oidc`: a sign-in at an OpenID Connect provider — see [OIDC login](/authentication/oidc). The two are mutually exclusive, there is no "off", and switching signs every browser out. |
+| `OIDC_ISSUER` | — | OIDC mode. The provider's issuer URL exactly as its discovery document states it (`https://accounts.google.com`, `https://keycloak.example/realms/home`). `https://`, unless the provider is on loopback. |
+| `OIDC_CLIENT_ID` | — | OIDC mode. The client registered with the provider, whose authorised redirect URIs are `<PUBLIC_BASE_URL>/api/auth/oidc/callback` (the browser) and `<PUBLIC_BASE_URL>/mcp/auth/callback` (AI clients). |
+| `OIDC_CLIENT_SECRET` | — | OIDC mode. That client's secret. |
+| `MCP_OAUTH_SIGNING_KEY` | — | OIDC mode, required. 32 random bytes as 64 hex characters (`openssl rand -hex 32`). Signs the tokens connected AI clients receive and encrypts their state in the database. Part of the instance's identity, like `PUBLIC_BASE_URL`: rotate it and every connected client signs in again; nothing else is lost. |
+| `MCP_OAUTH_ALLOWED_REDIRECT_URIS` | — | OIDC mode, optional. Comma-separated patterns (`http://localhost:*`, `https://*.example.com/*`) that a dynamically registering AI client may use as its callback. It narrows registration and never replaces it — a client is still only sent to a URI it registered. When set it applies to every client kind, so it must also admit the web clients' own callbacks (`https://claude.ai/api/mcp/auth_callback`, `https://chatgpt.com/connector/oauth/*`). Leave it unset unless you have a reason. |
 
 ## Currency and localisation
 
@@ -51,8 +53,48 @@ Every plamotrack setting lives in `.env` at the root of the plamotrack folder �
 
 | Key | Default | What it does |
 |---|---|---|
-| `AUDIT_RETENTION_DAYS` | — | Optional. Auto-prune security audit log rows older than this many days. Unset = keep forever. |
+| `AUDIT_RETENTION_DAYS` | — | Optional. Prune security [audit log](/configuration/audit-log) rows older than this many days, once at start and then daily. Unset: keep every row until you prune by hand. |
 
 <Note>
   Changes to `.env` need `docker compose up -d` to take effect. Some settings (like `REFERENCE_CURRENCY` and `POSTGRES_PASSWORD`) are only read at first run and cannot be changed by editing `.env` after the database exists.
 </Note>
+
+## The four network settings in detail
+
+The API and the bundled web server read the same four lines, so a change to any of them is the line in `.env` and then `docker compose up -d`.
+
+### `WEB_BIND`
+
+The interface the one published port listens on. `127.0.0.1`, the default, means only the host itself can connect; a private-network address opens the login to that network over plain HTTP; `0.0.0.0` opens it on every interface. It is the reliable control, not the host firewall — on Linux, a published Docker port bypasses the `INPUT` rules `ufw` and `firewalld` work with (see [Local & LAN](/deployment/local-and-lan)). A non-loopback value is also a name the instance answers to, but `0.0.0.0` names nothing. Keep it on loopback behind a proxy on the same host; set it to the address a connector or proxy on another machine reaches. `WEB_PORT` is the port.
+
+### `ALLOWED_HOSTS`
+
+The instance refuses a request whose `Host` header is not a name it knows, with `421 Misdirected Request` and a JSON body naming this setting. That is what stops a page in your browser from pointing its own hostname at your instance (DNS rebinding). It is also the one setting that can lock you out of your own install — recoverably: nothing is written or lost while it is wrong, and the fix is the line and `docker compose up -d`.
+
+Always known without listing: `localhost`, `127.0.0.1`, `[::1]`, a `WEB_BIND` address that names an interface, and the host of `PUBLIC_BASE_URL`. Everything else — `nas.lan`, `plamotrack.home.arpa`, a mesh DNS name, a container name, a name a reverse proxy forwards that is not the public one — goes here. Ports do not matter (`nas.lan:8080` is `nas.lan`), nor does letter case or a trailing DNS dot. `*.home.arpa` matches every name under that suffix and is the only wildcard form: a bare `*`, a `*:8080`, or a `*` anywhere else is refused at startup, because an allowlist of everything is the hole the setting closes. `WEB_BIND=0.0.0.0` names nothing, so the LAN address or hostname you actually type still has to be listed. Behind a proxy or tunnel the name is `PUBLIC_BASE_URL`'s host, which is known on its own; an SSH tunnel to `localhost:8080` never needs either.
+
+### `PUBLIC_BASE_URL`
+
+The address a browser uses when it isn't `http://localhost:<WEB_PORT>`: scheme, host and port, nothing after. Three things hang off it.
+
+- **The origin half of the allowlist.** A write from a browser — every browser sends an `Origin` header — must come from the instance's own origin, from a loopback origin against a loopback name, or from a listed one; anything else is `403` with the code `ingress.origin_not_allowed`. Behind TLS the app sees plain HTTP on its socket while the browser's origin is `https://…`, so without this line every save from the browser is that `403` — reads and the login work, and the first save fails. Scripts, `curl` and AI clients send no `Origin` and are not affected. An instance reached over plain HTTP by one name and through an HTTPS proxy by another is the case for `PUBLIC_BASE_URL` (the canonical one) plus `ALLOWED_ORIGINS` (the rest).
+- **The cookie.** On plain HTTP the session cookie cannot be marked `Secure` (a browser limitation), so its confidentiality rests on the network being yours. With an `https://` `PUBLIC_BASE_URL` it is `Secure` and `__Host-`-prefixed; the API's start log says which it is.
+- **Installation identity.** In OIDC mode it is required and must be `https://` — or `localhost` / `127.0.0.1` while developing — because the provider's callbacks and the OAuth server your AI clients connect to (`<PUBLIC_BASE_URL>/mcp`) are built from it, and every connected client is bound to it. Pick the name you mean to keep: change it later and every connected client signs in again.
+
+### `TRUSTED_PROXIES`
+
+IPs or CIDR ranges of a reverse proxy or tunnel connector in front of the stack whose `X-Forwarded-For` should be believed for the visitor's address. The rate limits key on that resolved address and the [audit log](/configuration/audit-log) records it; without the right entry every visitor *is* the proxy, and both see one address. A degradation, not a hole: nothing about the instance's own identity — cookies, redirects, the OAuth issuer — ever comes from a forwarded header. That is `PUBLIC_BASE_URL`'s job.
+
+A proxy on this same host is `127.0.0.1`. Inside the bundled stack that entry also trusts the Docker network's gateway, which is where a process on the host actually arrives from — Docker rewrites the source of connections that come in through a loopback-published port. A connector or proxy on another machine is its own address. Leave the setting empty when clients connect to the stack directly. Every hop in the header must be a valid IP address, with an optional port; a malformed or empty hop stops resolution at the last verified address.
+
+<Note>
+  In the bundled stack, nginx resolves the visitor's address and passes it to the API in a private header the API trusts. Every container attached to the stack's Compose network is inside that trust boundary: do not attach an untrusted companion container to it, and do not treat the audit address on a request another container sent straight to `api:8000` as verified. Nothing outside the stack can reach that port through the supplied Compose files — all published traffic passes through nginx, which overwrites a forged value.
+</Note>
+
+## Bootstrap settings and runtime settings
+
+Two keys are read once. `POSTGRES_PASSWORD` is used only when the database volume is first created; [Troubleshooting](/configuration/troubleshooting) covers what happens if you change it afterwards. `REFERENCE_CURRENCY` seeds the instance's settings row when the database is first migrated, and from then on the row is the setting.
+
+Interface language, formatting locale, time zone, date style, hour cycle and the reference currency are **runtime settings**: they live in the database, so every browser and every connected AI assistant sees the same values. Change them on the [Settings](/using/settings) page, or with `GET` and `PATCH` on `/api/settings`. A fresh install starts on `en-AU` for the language and the locale, `UTC` for the time zone, the locale's own date style and hour cycle, and `REFERENCE_CURRENCY` for the currency. A full-archive export includes the settings row, and importing an archive updates it in place.
+
+An instance updated from a version before these settings existed starts on the same `en-AU` and `UTC` defaults. The configured time zone is used when an import reads a CSV timestamp that carries no offset; stored dates, times, currency snapshots and identifiers are never reinterpreted. Downgrading past the release that introduced the settings removes the row, so note any values you changed before rolling back and set them again afterwards.

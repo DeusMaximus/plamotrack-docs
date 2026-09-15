@@ -41,7 +41,7 @@ If you checked out a release tag instead of `main`, select the published tag you
   - **Both MCP protocol generations from one endpoint.** The server now speaks the current MCP revision as well as the earlier handshake revisions, and each client chooses per request. Nothing to configure. See [Protocol versions](/mcp/overview#protocol-versions).
   - **Tested clients:** Claude.ai, ChatGPT, Gemini Spark, Mistral and MCP Inspector by OAuth sign-in; Claude Code and the `mcp-remote` bridge from the Claude Desktop guide by personal access token. The OAuth clients were linked before this update and were still linked after it, after a restart and after a restore from backup; the token clients used a token minted before it. See [Which clients work](/mcp/overview#which-clients-work).
 
-  **Update notes:** From 0.4.0, there are no new migrations, authentication changes or settings. Run the normal update. Connected AI clients stay connected and personal access tokens keep working. An instance updated from 0.3.x or 0.4.0 may hold a stored copy of Claude.ai's or ChatGPT's client description from before; it is used until the first fresh fetch and then removed — nothing to do. Returning to `v0.4.0-alpha` only requires checking out that tag and rebuilding; the two versions use the same database schema.
+  **Update notes:** From 0.4.0, there are no new migrations, authentication changes or settings. Run the normal update. Connected AI clients stay connected and personal access tokens keep working. An instance updated from 0.3.x or 0.4.0 may hold a stored copy of Claude.ai's or ChatGPT's client description from before; it is used until the first fresh fetch and then removed — nothing to do. One thing only an unusual client notices: a dynamic registration that asks for the `private_key_jwt` authentication method is refused at registration; none of the tested clients asks for it. Returning to `v0.4.0-alpha` only requires checking out that tag and rebuilding; the two versions use the same database schema.
 
   **Known limitations at release:** A client description that reached the instance through an intermediate cache is kept for its full lifetime from the moment it arrived, rather than for the remainder ([#249](https://github.com/DeusMaximus/plamotrack/issues/249)). The order-dialog limitation from 0.4.0 is still open ([#238](https://github.com/DeusMaximus/plamotrack/issues/238)).
 
@@ -143,7 +143,7 @@ If you checked out a release tag instead of `main`, select the published tag you
 
   **Update notes:** Three additive migrations add the new fields and display catalog. Downgrading past the display migration refuses while display data exists; keep a backup from before the update if you may need to return to an earlier version.
 
-  **If you imported CSVs before 0.2.7:** Check that kit order-line quantities match their attached kits before relying on a new archive for a full restore. Older imports could leave mismatches that a later restore refuses. The [quantity check and repair instructions](https://github.com/DeusMaximus/plamotrack/blob/v0.4.0-alpha/docs/operations.md#if-you-imported-csvs-before-027) explain how to inspect and reconcile them.
+  **If you imported CSVs before 0.2.7:** Check that kit order-line quantities match their attached kits before relying on a new archive for a full restore. Older imports could leave mismatches that a later restore refuses. [Kit quantities from early imports](#kit-quantities-from-early-imports) explains how to inspect and reconcile them.
 
   Work planned for 0.2.6 was included here; there was no separate 0.2.6 release.
 
@@ -249,3 +249,27 @@ If you checked out a release tag instead of `main`, select the published tag you
 </Update>
 
 Release dates use GitHub's publication dates in UTC. [Browse all releases](https://github.com/DeusMaximus/plamotrack/releases).
+
+## Data checks for older instances
+
+Two situations a much older instance can be in. Neither affects a fresh installation.
+
+### Kit quantities from early imports
+
+Importers before 0.2.7 could leave a kit order line holding a different number of kits than its quantity said. Nothing in the app minds, but an archive exported from such a collection is refused when you restore it with **Replace everything** ("this line says quantity N, but this upload supplies M kit(s)"). Check once, before your next export, from your `plamotrack` folder:
+
+```bash
+docker compose exec -T db sh -c 'exec psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<'SQL'
+SELECT oi.id, oi.quantity, count(k.id) AS kits
+FROM order_items oi LEFT JOIN kits k ON k.order_item_id = oi.id
+WHERE oi.item_type = 'kit'
+GROUP BY oi.id, oi.quantity
+HAVING count(k.id) <> oi.quantity;
+SQL
+```
+
+No rows means nothing to do. For each row it lists, open that order in the app and save the line: the order editor reconciles the count against the kits actually there — it spawns a missing one, or leaves an extra one in place once you set the quantity to match. Then export again.
+
+### Databases from before the first public release
+
+The migration that introduced pending and received orders marked every order that existed before it as received — those orders had their stock applied at entry, so they were received by definition — but did not touch the kits those orders had spawned. A database that crossed that migration before 6 August 2026 can therefore hold a received order whose kit still says **Ordered** or **In Transit**, which the app would never produce on its own. It is cosmetic, and deliberately not repaired by a later migration, since a repair now would overwrite kit statuses set by hand since. If you see such a kit, edit its status; that is the whole fix.
