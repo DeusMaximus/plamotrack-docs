@@ -1,0 +1,55 @@
+---
+title: "The security audit log: what plamotrack records and how to prune it"
+sidebarTitle: "Audit log"
+description: "What the security audit log records, what it never records, how to prune it by hand or on a schedule, and how to keep credentials out of your access logs."
+---
+
+plamotrack keeps a security audit log in its database, in the `audit_event` table. It records who did what to the instance's authentication and ingress — never what is in your collection, since collection edits are not audited. The log is append-only during normal operation, and you decide how long to keep it.
+
+## What is recorded
+
+- **Ownership:** the owner claim, a switch between password and OIDC login, and each host-side recovery command (`reset-password`, `revoke-sessions`, `rebind-oidc`).
+- **Sign-in:** login success, failure and throttling, sign-out and session revocation.
+- **Access tokens:** minting, revocation, and any attempt to use a revoked token.
+- **Connected AI clients (OIDC mode):** a sign-in by an account that is not the owner, refused before any token is issued; and a grant ending — because the client revoked it, the owner was rebound, or the identity provider stopped refreshing it.
+- **Ingress refusals that reached the app:** a request for a name the instance does not know (`421`), or a browser write from an origin it does not recognise (`403`). The bundled web server (nginx) refuses an unknown name before it reaches the API, so that outer refusal is in nginx's own access log; the app's refusal is the database row.
+
+Each row carries the kind of credential and its id where one exists, the resolved client address, and the route or MCP tool involved. Detail is short structured metadata only.
+
+## What is never recorded
+
+- A credential, a request body or a query string.
+- An OAuth client's identifier or a refused OIDC subject as text. Both are stored as `sha256:<hex>` fingerprints. The digest covers the whole identifier, so two clients whose URLs differ only by a query string are still told apart, without the URL itself being kept.
+- A provider's error text. A failed browser callback records one of `access_denied`, `missing_code` or `other`; a failed token exchange keeps the HTTP status and nothing from the provider's response body.
+
+These rules apply to rows as they are written; existing rows are not rewritten.
+
+## Refusal budget
+
+A flood of refused requests cannot grow the table by a row per request. Host and origin refusals are recorded within a budget — ten rows a minute per address and sixty a minute for the instance. The rest are counted and written as one `ingress.refusals_suppressed` row alongside the next recorded refusal, and the first rows of a flood keep their address and path.
+
+## Retention
+
+Nothing is pruned unless you ask. There are two ways to ask.
+
+**By hand**, from the host. This deletes rows older than a number of days you choose — 180 here — and appends a row recording the prune itself:
+
+```bash
+docker compose exec api python -m app.auth.recovery prune-audit --older-than-days 180
+```
+
+**On a schedule**, by setting `AUDIT_RETENTION_DAYS` in `.env` to the number of days to keep. The API then runs the same prune once at start and again daily. Left unset, it keeps every row until you run the command.
+
+Take a [database backup](/configuration/backups) first if those events must stay available somewhere else.
+
+## Access logs and callback credentials
+
+The audit log is not the only place a request leaves a trace. The API and the bundled nginx both keep access logs — `docker compose logs api` and `docker compose logs web` — recording request paths, methods and statuses, deliberately without query strings. nginx also omits request headers such as `Referer`, because an OAuth callback URL carries a one-time authorization code and state. Its records do keep the upstream status and the request and upstream timing, which is what you want when diagnosing a `429` or a `5xx`.
+
+Two further things are deliberately reduced. nginx's raw request-error diagnostics are discarded, because they cannot be reformatted and include the request as sent; configuration and startup failures still reach the container's error output. And the authentication libraries' own diagnostics are kept to their severity and source with a fixed message, since those libraries can embed state values, provider errors and exceptions in their text. The app's own authentication messages, the audit events and every other application error are unaffected.
+
+<Warning>
+  Do not restore nginx's default `combined` access-log format or its request error log on an OIDC instance. Both record exactly what the rules above keep out.
+</Warning>
+
+A proxy in front of the stack needs the same hygiene. The reference [Caddyfile](/deployment/vps-caddy#configure-caddy) has no `log` directive for this reason. If you enable one, or your proxy logs by default — most do — it records the full request URI, an OIDC callback's one-time code included, unless you configure it not to.

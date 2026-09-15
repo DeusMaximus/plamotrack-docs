@@ -11,7 +11,7 @@ A Cloudflare Tunnel works by connecting outward — the `cloudflared` connector 
 - A Cloudflare account with a domain managed by Cloudflare DNS
 - `cloudflared` installed — see [Cloudflare's getting started guide](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/)
 
-The `cloudflared` connector can run on the same host as your plamotrack stack or on a separate machine — both configurations work.
+The `cloudflared` connector can run on the same host as your plamotrack stack or on a separate machine. Both work; the tested configuration has the connector on a separate machine, reaching the stack over the LAN.
 
 ## Set up the tunnel route
 
@@ -32,9 +32,9 @@ The `cloudflared` connector can run on the same host as your plamotrack stack or
 Add or edit these three lines in your `.env`:
 
 ```ini
-WEB_BIND=127.0.0.1              # keep it on loopback
+WEB_BIND=127.0.0.1              # the address the connector reaches: 127.0.0.1 on this host, this host's LAN address otherwise
 PUBLIC_BASE_URL=https://plamotrack.example
-TRUSTED_PROXIES=127.0.0.1       # the connector's address; use its IP if it's on another machine
+TRUSTED_PROXIES=127.0.0.1       # the connector's address: 127.0.0.1 on this host, its own IP otherwise
 ```
 
 Then bring the stack back up:
@@ -45,9 +45,9 @@ docker compose up -d
 
 **What each line does:**
 
-- `WEB_BIND=127.0.0.1` keeps the port closed to everything except the local connector. Cloudflare is the only way in.
+- `WEB_BIND` keeps the port closed to everything except the connector. With the connector on the same host that is `127.0.0.1`, and Cloudflare is the only way in. With the connector on another machine it is the address that machine reaches this host at — a LAN or mesh address, never `0.0.0.0` — and the hop between them is plain HTTP on your own network, the same assumption as a [LAN install](/deployment/local-and-lan).
 - `PUBLIC_BASE_URL` tells plamotrack what address browsers see. Without this, every save from the browser returns a `403 ingress.origin_not_allowed` error because the browser's `https://` origin doesn't match the instance's plain-HTTP socket.
-- `TRUSTED_PROXIES` tells plamotrack to trust `X-Forwarded-For` headers from the connector, so rate limits and the audit log see your actual visitors rather than the connector's address.
+- `TRUSTED_PROXIES` tells plamotrack to trust `X-Forwarded-For` headers from the connector, so rate limits and the audit log see your actual visitors rather than the connector's address. Cloudflare sets that header to the visitor.
 
 `PUBLIC_BASE_URL`'s host is automatically added to the allowed-hosts list, so you don't need to set `ALLOWED_HOSTS` separately for the public name.
 
@@ -61,6 +61,8 @@ https://plamotrack.example/api/healthz
 
 You should get back `{"status":"ok"}`. Then open the app in your browser and claim the instance if you haven't already — run `docker compose logs api | grep -A6 "no owner yet"` to find the setup token.
 
+Cloudflare Access can sit in front of the hostname as well; the plamotrack login still applies behind it.
+
 ## MCP and AI assistants
 
 Once plamotrack is behind TLS with `PUBLIC_BASE_URL` set, you can connect Claude web, ChatGPT web, Gemini Spark and Mistral directly from their connector dialogs — just paste `https://plamotrack.example/mcp/` as the MCP URL.
@@ -71,7 +73,9 @@ In [OIDC Login](/authentication/oidc) mode (`AUTH_MODE=oidc`), those web clients
   Cloudflare enforces a 125-second limit on the time to a response's first
   headers. A very large CSV import that takes over 125 seconds to respond will
   produce a Cloudflare `524` error in your browser — but the import still
-  completes on the server. MCP is a streaming protocol (`text/event-stream`),
-  which the tunnel handles without that limit, so all AI assistant connections
-  are unaffected.
+  completes on the server. MCP is a streaming protocol (`text/event-stream`,
+  which is what tells the tunnel not to buffer), and the limit is on the
+  headers, not the stream: a stream held idle stays open, since Cloudflare's
+  idle limit is 900 seconds and the API sends a keepalive every 15 seconds. AI
+  assistant connections are unaffected.
 </Note>

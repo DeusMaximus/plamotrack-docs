@@ -54,7 +54,7 @@ docker compose up -d
 
 ## Claim the instance in OIDC mode
 
-The API still prints a one-time setup token to its log on first start, just like a fresh install. Open the app, enter the token when prompted, and plamotrack will redirect you to your identity provider. The account you sign in with at the provider becomes the owner of the instance. No password is set.
+The API still prints a one-time setup token to its log on first start, just like a fresh install. Open the app, enter the token when prompted, and plamotrack will redirect you to your identity provider. The account you sign in with at the provider becomes the owner of the instance, bound to the stable identity the provider asserts — its issuer and subject, not an email address, which is shown in the UI and used for nothing else. No password is set. Any other account that signs in at the same provider is refused, and the refusal is recorded in the [audit log](/configuration/audit-log).
 
 If you miss the token or need a fresh one, restart the API container:
 
@@ -82,7 +82,7 @@ If you lose access to the identity provider account bound to your instance — o
 docker compose exec api python -m app.auth.recovery rebind-oidc
 ```
 
-This command clears the bound identity, signs every active browser session out, and revokes all MCP client links made through the provider. Then restart the API and sign in with the new account:
+This command clears the bound identity, signs every active browser session out, and ends every MCP client link made through the provider: the grants are purged from the instance and, best effort, the provider's own refresh tokens behind them are revoked — the command reports how many the provider accepted, and a provider that cannot be reached leaves the local purge standing. Then restart the API and sign in with the new account:
 
 ```bash
 docker compose restart api

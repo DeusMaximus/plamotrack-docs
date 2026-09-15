@@ -100,6 +100,8 @@ Most plamotrack issues fall into a handful of categories. This page covers the m
   docker compose ps
   docker compose logs api
   ```
+
+  The `api` healthcheck probes `/readyz` from *inside* the container, which is the only place it answers. From outside, `/api/readyz` is deliberately `404` so a stranger can't learn whether the database is up, and `/api/healthz` only says the process is alive.
 </Accordion>
 
 <Accordion title="Caddy certificate errors">

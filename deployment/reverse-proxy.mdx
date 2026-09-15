@@ -8,7 +8,7 @@ If you already run a reverse proxy — nginx, Traefik, nginx Proxy Manager, Zora
 
 ## Requirements
 
-Your proxy must do all four of these things:
+Your proxy must do all five of these things:
 
 <Steps>
   <Step title="Pass the Host header unchanged">
@@ -30,6 +30,9 @@ Your proxy must do all four of these things:
     If the proxy is on the same host, keep `WEB_BIND` at its default of `127.0.0.1`. The proxy should be the only way into the stack — not a firewall rule, not a Docker network configuration, but the bind address itself.
 
     A proxy on a different machine reaches the instance at its LAN or mesh address; in that case set `WEB_BIND` to that address and keep it off the public internet.
+  </Step>
+  <Step title="Mind the proxy's access log">
+    A proxy that logs full request URIs — most do by default — logs the one-time codes an OIDC callback carries. Turn that off, or trim the log to paths without their query strings, as the bundled web server does. See [Access logs and callback credentials](/configuration/audit-log#access-logs-and-callback-credentials).
   </Step>
 </Steps>
 
