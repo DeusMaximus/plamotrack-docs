@@ -35,6 +35,24 @@ If you checked out a release tag instead of `main`, select the published tag you
 
 ## Changelog
 
+<Update label="v0.5.0-alpha" description="20 September 2026">
+  ## plamotrack on a phone and a tablet
+
+  - **Three layouts, chosen by the width of the window.** On a phone: a tab bar under your thumb, lists as cards, forms as full-screen sheets with their buttons at the foot of the screen, and one **Filter and sort** sheet on Kits and Orders. On a tablet or in a narrow window: a rail of icons, and tables that fold their columns to fit instead of scrolling sideways. From 1280 px wide it is the desktop layout as before. See [Phone & Tablet](/using/phone-and-tablet).
+  - **Add it to your home screen** on iOS, iPadOS or Android and it opens in its own window, still signed in. There is no offline mode.
+  - **Settings on a phone** opens as a list of its sections. **Data management** there offers the exports only — importing and the blank templates need a screen at least 768 px wide.
+  - **Large text holds up.** On a phone, rows wrap and long names break rather than pushing anything off the screen, up to two and a half times the browser's default text size.
+  - Keyboard focus keeps its place when a tablet is turned or a window is resized, including with a dialog open.
+
+  **Update notes:** From 0.4.1, there are no new migrations, authentication changes or settings. Run the normal update and sign in as before. Returning to `v0.4.1-alpha` only requires checking out that tag and rebuilding; the two versions use the same database schema.
+
+  **One change on the desktop:** between 1280 and 1361 px wide, the Orders table now shows the order number under the retailer's name, where an ordinary row used to push the edit control off the table's edge. Nothing else from 1280 px up has moved.
+
+  **Known limitations at release:** On the stock steppers, keyboard focus is not kept on the button after a press ([#268](https://github.com/DeusMaximus/plamotrack/issues/268)). The order-dialog limitation from 0.4.0 is still open ([#238](https://github.com/DeusMaximus/plamotrack/issues/238)).
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.5.0-alpha)
+</Update>
+
 <Update label="v0.4.1-alpha" description="15 September 2026">
   ## MCP: the current protocol revision, without dropping older clients
 
