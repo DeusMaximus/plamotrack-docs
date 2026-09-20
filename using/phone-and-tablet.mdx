@@ -1,0 +1,170 @@
+---
+title: "Using plamotrack on a phone or tablet"
+sidebarTitle: "Phone & Tablet"
+description: "plamotrack lays itself out for the screen it is on: a tab bar and cards on a phone, an icon rail on a tablet. Add it to your home screen to open it like an app."
+---
+
+plamotrack is one web app that lays itself out for the screen it is on. There is nothing extra to install and no separate mobile site: open your instance's address in the phone's browser and sign in as you do on a computer. Everything you record lands in the same collection.
+
+The layout follows the width of the window, not the kind of device:
+
+| Width | What you get |
+| --- | --- |
+| Below 768 px — a phone | A tab bar at the foot of the screen, lists as cards, dialogs as full-screen sheets |
+| 768 to 1279 px — a tablet, or a narrow window on a computer | A narrow rail of icons in place of the sidebar; tables that fold their columns to fit |
+| 1280 px and wider | The desktop layout, with the full sidebar |
+
+A tablet turned on its side, or a browser window dragged narrower, changes layout on the spot. A half-filled form keeps what you typed.
+
+<Note>
+  Your phone has to be able to reach your instance. On the same Wi-Fi as a [local or LAN install](/deployment/local-and-lan) that is the computer's address on your network. To reach it from the hobby shop, you need one of the [remote deployments](/deployment/overview).
+</Note>
+
+## On a phone
+
+<Frame caption="Home on a phone: the bench first, the tab bar under your thumb. All collection details shown here are invented demo data.">
+  <img className="block dark:hidden mx-auto" width="320" src="/images/screenshots/phone-home-light.png" alt="Home on a phone, with two kits on the bench, the backlog below them, and a tab bar with Home, Kits, Orders, Inventory and More." />
+  <img className="hidden dark:block mx-auto" width="320" src="/images/screenshots/phone-home.png" alt="Home on a phone, with two kits on the bench, the backlog below them, and a tab bar with Home, Kits, Orders, Inventory and More." />
+</Frame>
+
+### Getting around
+
+The tab bar has five tabs: **Home**, **Kits**, **Orders**, **Inventory** and **More**. **More** holds what the sidebar's lower half holds on a computer: **Retailers**, **Settings**, the theme choice and **Sign out**.
+
+<Frame caption="More: Retailers, Settings, the theme and Sign out.">
+  <img className="block dark:hidden mx-auto" width="320" src="/images/screenshots/phone-more-light.png" alt="The More tab on a phone, listing Retailers and Settings, a Theme control with Light, Dark and Device, and Sign out." />
+  <img className="hidden dark:block mx-auto" width="320" src="/images/screenshots/phone-more.png" alt="The More tab on a phone, listing Retailers and Settings, a Theme control with Light, Dark and Device, and Sign out." />
+</Frame>
+
+### Home
+
+Home is one column. **On the bench** comes first, then **Backlog** and **Recently completed**, then **In the mail** as three groups — **Pre-ordered**, **Ordered** and **In Transit** — one under the other. The pencil on any card opens that kit or order for editing.
+
+<Frame caption="Further down Home: recently completed kits, then the mail in its three groups.">
+  <img className="block dark:hidden mx-auto" width="320" src="/images/screenshots/phone-home-mail-light.png" alt="The lower part of Home on a phone: completed kits with their ratings and dates, then In the mail grouped under Pre-ordered, Ordered and In Transit." />
+  <img className="hidden dark:block mx-auto" width="320" src="/images/screenshots/phone-home-mail.png" alt="The lower part of Home on a phone: completed kits with their ratings and dates, then In the mail grouped under Pre-ordered, Ordered and In Transit." />
+</Frame>
+
+### Lists, filters and sorting
+
+**Kits**, **Orders**, **Inventory** and **Retailers** show a card for each row. Tap the pencil on a card to edit it. On **Orders**, tap the card itself to see the order's lines.
+
+On **Kits** and **Orders**, the search box stays at the top of the list and everything else — status, series, retailer, sort order — lives behind one button beside it.
+
+<Steps>
+  <Step title="Open the sheet">
+    Tap the **Filter and sort** button to the right of the search box. A badge on the button counts the filters already in effect.
+  </Step>
+  <Step title="Choose">
+    Pick a status, a series or a sort order. Each status shows how many kits it holds, and the button at the foot of the sheet counts what your choices will show.
+  </Step>
+  <Step title="Apply">
+    Tap **Show … kits**. Tap **Clear** to reset the choices, or close the sheet to leave the list as it was.
+  </Step>
+</Steps>
+
+<Frame caption="Kits on a phone, filtered to the backlog, and the Filter and sort sheet that did it.">
+  <img className="block dark:hidden mx-auto" width="320" src="/images/screenshots/phone-filter-light.png" alt="The Filter and sort sheet over the Kits list, with a button for each status and its count, three sort orders, and Clear and Show 5 kits at the foot." />
+  <img className="hidden dark:block mx-auto" width="320" src="/images/screenshots/phone-filter.png" alt="The Filter and sort sheet over the Kits list, with a button for each status and its count, three sort orders, and Clear and Show 5 kits at the foot." />
+</Frame>
+
+A filtered list has its own address, exactly as on a computer, so a bookmark or a **view all** link from Home opens already filtered.
+
+### Recording an order
+
+Every dialog opens as a full-screen sheet. Its buttons — **Cancel** and **Record order**, say — sit in a bar at the foot of the screen, where they stay while you scroll the form. In **New order**, each line is a card of its own: the type, the quantity and the price, then the kit's details or the catalog search.
+
+<Frame caption="New order on a phone: a line is a card, and the actions stay at the foot of the screen.">
+  <img className="block dark:hidden mx-auto" width="320" src="/images/screenshots/phone-order-form-light.png" alt="The New order sheet on a phone, showing one kit line as a card with quantity, unit price, name and grade, and Cancel and Record order in a bar at the bottom." />
+  <img className="hidden dark:block mx-auto" width="320" src="/images/screenshots/phone-order-form.png" alt="The New order sheet on a phone, showing one kit line as a card with quantity, unit price, name and grade, and Cancel and Record order in a bar at the bottom." />
+</Frame>
+
+The steps are the ones in [Kits & Orders](/using/kits-and-orders); only the shape differs.
+
+### Counting stock
+
+On **Inventory**, each card has a minus and a plus button either side of the count, sized for a finger. It is the quickest way to take one pot of cement off the shelf mid-build.
+
+<Frame caption="Consumables on a phone. The thinner is at 0 until its order arrives; the cement is below its threshold.">
+  <img className="block dark:hidden mx-auto" width="320" src="/images/screenshots/phone-inventory-light.png" alt="Inventory on a phone, on the Consumables tab: a card for each item with its category, a low-stock threshold where set, and minus and plus buttons beside the count." />
+  <img className="hidden dark:block mx-auto" width="320" src="/images/screenshots/phone-inventory.png" alt="Inventory on a phone, on the Consumables tab: a card for each item with its category, a low-stock threshold where set, and minus and plus buttons beside the count." />
+</Frame>
+
+### Settings
+
+**Settings**, from **More**, opens as a list of its five sections. Tap one to open it; the arrow at the top left goes back to the list.
+
+<Frame caption="Settings on a phone is the list of its sections.">
+  <img className="block dark:hidden mx-auto" width="320" src="/images/screenshots/phone-settings-light.png" alt="Settings on a phone: a list of General, Language & region, Data management, Access tokens and About." />
+  <img className="hidden dark:block mx-auto" width="320" src="/images/screenshots/phone-settings.png" alt="Settings on a phone: a list of General, Language & region, Data management, Access tokens and About." />
+</Frame>
+
+### What a phone leaves out
+
+**Data management** on a phone offers the exports only: **Download full archive (.zip)** and the per-table CSV buttons. An archive saved to your phone is a fair quick backup. Importing and the blank templates need a screen at least 768 px wide — a tablet or a computer. The import preview is a set of wide tables, and **Replace everything** is the one action in plamotrack that deletes a collection; neither belongs on a small touch screen.
+
+<Frame caption="Data management on a phone: the exports, and where importing lives.">
+  <img className="block dark:hidden mx-auto" width="320" src="/images/screenshots/phone-data-light.png" alt="Settings → Data management on a phone: the Export card with the full archive and per-table CSV buttons, and a sentence saying importing and the templates need a wider screen." />
+  <img className="hidden dark:block mx-auto" width="320" src="/images/screenshots/phone-data.png" alt="Settings → Data management on a phone: the Export card with the full archive and per-table CSV buttons, and a sentence saying importing and the templates need a wider screen." />
+</Frame>
+
+Everything else is there: every page, every dialog and every field.
+
+## On a tablet
+
+From 768 px the sidebar becomes a rail of icons down the left edge — the same destinations, the theme control and **Sign out**, without their labels. Pages use the desktop's tables, and a table that is wider than its space folds columns away instead of scrolling sideways: on **Orders**, the order number tucks under the retailer's name, the shipped and received dates go under the status, and the tracking number moves into the order's expanded lines. Nothing is dropped; it moves.
+
+<Frame caption="Home on a tablet held upright: the icon rail on the left, the bench two abreast.">
+  <img className="block dark:hidden" src="/images/screenshots/tablet-home-light.png" alt="Home at a tablet's width, with a rail of icons down the left edge, two kits side by side on the bench, then the backlog, recently completed kits and the mail." />
+  <img className="hidden dark:block" src="/images/screenshots/tablet-home.png" alt="Home at a tablet's width, with a rail of icons down the left edge, two kits side by side on the bench, then the backlog, recently completed kits and the mail." />
+</Frame>
+
+<Frame caption="Orders on a tablet held upright: the icon rail, and a table folded to the width it has.">
+  <img className="block dark:hidden" src="/images/screenshots/tablet-orders-light.png" alt="Orders at a tablet's width, with a rail of icons on the left and a table whose order numbers sit under the retailer names, one order expanded to show its two lines." />
+  <img className="hidden dark:block" src="/images/screenshots/tablet-orders.png" alt="Orders at a tablet's width, with a rail of icons on the left and a table whose order numbers sit under the retailer names, one order expanded to show its two lines." />
+</Frame>
+
+Buttons and controls are finger-sized on any touch screen, whatever its width. A tablet wide enough for the desktop layout — a 13-inch one on its side — gets the full sidebar with the larger controls. Dialogs are the desktop's centred panels, and **Data management** is complete, imports included.
+
+## Add plamotrack to your home screen
+
+Adding plamotrack to your home screen gives it an icon of its own and opens it in its own window, without the browser's address bar.
+
+<Tabs>
+  <Tab title="iPhone and iPad">
+    <Steps>
+      <Step title="Open your instance in Safari">
+        Sign in, so you know the address works from this device.
+      </Step>
+      <Step title="Open the share menu">
+        Tap the **Share** button, then **Add to Home Screen**.
+      </Step>
+      <Step title="Add it">
+        Keep the name or change it, then tap **Add**.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Android">
+    <Steps>
+      <Step title="Open your instance in Chrome">
+        Sign in, so you know the address works from this device.
+      </Step>
+      <Step title="Open the menu">
+        Tap the three-dot menu, then **Add to Home screen**. Chrome may offer **Install app** instead when your instance is served over HTTPS; either works.
+      </Step>
+      <Step title="Add it">
+        Confirm the name and tap **Add**.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+The icon is a shortcut to your server, not a copy of your collection:
+
+- **There is no offline mode.** Without a connection to your instance, plamotrack cannot load or save anything.
+- **Nothing is stored on the phone** but your sign-in and your theme choice.
+- **You may have to sign in once more** after adding it. Some browsers keep a home-screen app's sign-in separate from the browser's.
+
+## Large text
+
+plamotrack follows your browser's text-size setting. On a phone, rows wrap and long names break onto further lines rather than pushing anything off the screen; this is checked up to two and a half times the default size on a phone 320 px wide.
