@@ -55,6 +55,13 @@ These four settings decide who can reach the instance and by what name. The [dep
 |---|---|---|
 | `AUDIT_RETENTION_DAYS` | — | Optional. Prune security [audit log](/configuration/audit-log) rows older than this many days, once at start and then daily. Unset: keep every row until you prune by hand. |
 
+## Docker Compose
+
+| Key | Default | What it does |
+|---|---|---|
+| `COMPOSE_FILE` | — | Required in a Git checkout, as `docker-compose.yml:docker-compose.build.yml` — the value `.env.example` sets. It makes every `docker compose` command in the folder build plamotrack from your checkout. Without it, Compose looks for a published image and stops with `error from registry: denied`. |
+| `COMPOSE_PATH_SEPARATOR` | — | `:`, as `.env.example` sets it. The separator between the files in `COMPOSE_FILE`, spelled out so the same line works on Windows. |
+
 <Note>
   Changes to `.env` need `docker compose up -d` to take effect. Some settings (like `REFERENCE_CURRENCY` and `POSTGRES_PASSWORD`) are only read at first run and cannot be changed by editing `.env` after the database exists.
 </Note>

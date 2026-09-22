@@ -16,13 +16,22 @@ These steps are for the standard installation from the `main` branch. Run comman
 
 1. **Back up the database and your `.env`.** Follow [Backups](/configuration/backups). A CSV export is a useful extra copy of your collection, but it does not include your owner account, sessions or access tokens.
 2. **Read the relevant release notes below.** Make any required configuration changes before starting the new version.
-3. **Pull the code and rebuild:**
+3. **Pull the code:**
    ```bash
    git pull
+   ```
+4. **Check the top of your `.env` for a `COMPOSE_FILE` line.** An installation set up from `v0.5.0-alpha` or earlier doesn't have one. Add these two lines at the top of `.env`, exactly as written:
+   ```ini
+   COMPOSE_PATH_SEPARATOR=:
+   COMPOSE_FILE=docker-compose.yml:docker-compose.build.yml
+   ```
+   They make every `docker compose` command in the folder build plamotrack from your checkout, as before. Without them, the next command looks for a published image instead and stops with `error from registry: denied`, before changing anything.
+5. **Rebuild:**
+   ```bash
    docker compose up -d --build --wait
    ```
    Keep `--build`, including on later updates. The `migrate` service applies new database migrations before the API starts; you do not run a separate migration command.
-4. **Check the result:**
+6. **Check the result:**
    ```bash
    docker compose ps -a
    docker compose logs migrate
