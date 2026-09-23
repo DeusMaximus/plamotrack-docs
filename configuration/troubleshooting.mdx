@@ -36,6 +36,21 @@ Most plamotrack issues fall into a handful of categories. This page covers the m
   The API deliberately won't start if migrations fail, so a stopped deploy here means your database is still intact.
 </Accordion>
 
+<Accordion title="error from registry: denied, after updating a Git installation">
+  You installed with `git clone`, and your `.env` is older than the current Compose files: it has no `COMPOSE_FILE` line, so Docker Compose looked for a published image instead of building plamotrack from your checkout. Nothing was changed. You can [move the installation onto the release files](/configuration/upgrading#if-you-installed-with-git), or keep building from Git by adding these two lines at the top of `.env`:
+
+  ```ini
+  COMPOSE_PATH_SEPARATOR=:
+  COMPOSE_FILE=docker-compose.yml:docker-compose.build.yml
+  ```
+
+  Then run:
+
+  ```bash
+  docker compose up -d --build --wait
+  ```
+</Accordion>
+
 <Accordion title="Port 8080 already in use">
   Set `WEB_PORT` in `.env` to any free port (e.g. `9090`), then restart:
 
@@ -45,13 +60,13 @@ Most plamotrack issues fall into a handful of categories. This page covers the m
 </Accordion>
 
 <Accordion title="POSTGRES_PASSWORD error from Compose">
-  You skipped the `cp .env.example .env` step during installation. Create the file first:
+  You skipped the `cp env.example .env` step during installation. Create the file first:
 
   ```bash
-  cp .env.example .env
+  cp env.example .env
   ```
 
-  Then open `.env`, replace `change-me` with a real password, and run `docker compose up -d --build --wait`.
+  Then open `.env`, replace `change-me` with a real password, and run `docker compose up -d --no-build --wait`.
 </Accordion>
 
 <Accordion title="password authentication failed (database)">

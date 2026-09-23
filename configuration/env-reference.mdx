@@ -7,7 +7,7 @@ description: "All plamotrack settings live in a single .env file. Reference for 
 Every plamotrack setting lives in `.env` at the root of the plamotrack folder — one file that both Docker Compose and the app read. Edit it with a text editor, then run `docker compose up -d` to apply changes.
 
 <Note>
-  `.env.example` in the plamotrack folder contains every available key with comments. Copy it to `.env` when you first install, then edit only what you need.
+  `env.example`, one of the release files in your plamotrack folder, lists the common keys with comments. Copy it to `.env` when you first install, then edit only what you need. This page covers every key.
 </Note>
 
 ## Database
@@ -54,6 +54,15 @@ These four settings decide who can reach the instance and by what name. The [dep
 | Key | Default | What it does |
 |---|---|---|
 | `AUDIT_RETENTION_DAYS` | — | Optional. Prune security [audit log](/configuration/audit-log) rows older than this many days, once at start and then daily. Unset: keep every row until you prune by hand. |
+
+## Docker Compose (Git installations only)
+
+An installation from the release files needs neither key. Leave them out, or delete them if you [moved a Git installation onto the release files](/configuration/upgrading#if-you-installed-with-git).
+
+| Key | Default | What it does |
+|---|---|---|
+| `COMPOSE_FILE` | — | In a `git clone`, `docker-compose.yml:docker-compose.build.yml`, the value the repository's `.env.example` sets. It selects the build configuration (`docker-compose.build.yml`) for the `docker compose` commands you run in the folder, so `docker compose up -d --build --wait` builds from the checkout. Without it, Compose looks for a published image and stops with `error from registry: denied`. |
+| `COMPOSE_PATH_SEPARATOR` | — | `:`, set alongside `COMPOSE_FILE`. The separator between the files in `COMPOSE_FILE`, spelled out so the same line works on Windows. |
 
 <Note>
   Changes to `.env` need `docker compose up -d` to take effect. Some settings (like `REFERENCE_CURRENCY` and `POSTGRES_PASSWORD`) are only read at first run and cannot be changed by editing `.env` after the database exists.

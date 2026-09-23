@@ -64,7 +64,7 @@ Restore into an empty database — `pg_restore` will not merge cleanly into a po
   </Step>
   <Step title="Start everything back up">
     ```bash
-    docker compose up -d --build --wait
+    docker compose up -d --no-build --wait
     ```
   </Step>
 </Steps>
