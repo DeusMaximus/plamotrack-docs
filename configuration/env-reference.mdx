@@ -61,7 +61,7 @@ An installation from the release files needs neither key. Leave them out, or del
 
 | Key | Default | What it does |
 |---|---|---|
-| `COMPOSE_FILE` | — | In a `git clone`, `docker-compose.yml:docker-compose.build.yml`, the value the repository's `.env.example` sets. It makes every `docker compose` command in the folder build plamotrack from the checkout. Without it, Compose looks for a published image and stops with `error from registry: denied`. |
+| `COMPOSE_FILE` | — | In a `git clone`, `docker-compose.yml:docker-compose.build.yml`, the value the repository's `.env.example` sets. It selects the build configuration (`docker-compose.build.yml`) for the `docker compose` commands you run in the folder, so `docker compose up -d --build --wait` builds from the checkout. Without it, Compose looks for a published image and stops with `error from registry: denied`. |
 | `COMPOSE_PATH_SEPARATOR` | — | `:`, set alongside `COMPOSE_FILE`. The separator between the files in `COMPOSE_FILE`, spelled out so the same line works on Windows. |
 
 <Note>

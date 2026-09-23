@@ -14,27 +14,57 @@ How to update, then what changed in each release, newest first. These are publis
 
 These steps are for an installation from the release files, as in [Installation](/installation). If you installed with `git clone`, see [If you installed with Git](#if-you-installed-with-git).
 
-1. **Back up the database and your `.env`.** Follow [Backups](/configuration/backups). A CSV export is a useful extra copy of your collection, but it does not include your owner account, sessions or access tokens.
-2. **Read the release notes below** for every version newer than yours. Make any required configuration changes before starting the new version.
-3. **Download the new version's files into your `plamotrack` folder**, replacing the old ones. Your `.env` stays as it is. Use the number of the version you're updating to; the newest is **v0.5.2-alpha**:
-   ```bash
-   cd ~/plamotrack
-   ```
-   ```bash
-   for f in docker-compose.yml env.example plamotrack-gunpla.zip release.json SHA256SUMS; do curl -fsSLO "https://github.com/DeusMaximus/plamotrack/releases/download/v0.5.2-alpha/$f"; done
-   ```
-   Then check them with `sha256sum -c SHA256SUMS` (on macOS: `shasum -a 256 -c SHA256SUMS`). Every file should say **OK**.
-4. **Start the new version:**
-   ```bash
-   docker compose up -d --no-build --wait
-   ```
-   The `migrate` service applies any new database migrations before the API starts. You do not run a separate migration command.
-5. **Check the result:**
-   ```bash
-   docker compose ps -a
-   docker compose logs migrate
-   ```
-   The `db`, `api` and `web` services should be running. `migrate` should have finished with `Exited (0)`. Open the app and follow any setup steps in the release notes.
+<Steps>
+  <Step title="Back up">
+    Follow [Backups](/configuration/backups): the database and your `.env`. A CSV export is a useful extra copy of your collection, but it does not include your owner account, sessions or access tokens.
+  </Step>
+  <Step title="Read the release notes">
+    Read the notes below for every version newer than yours, and make any configuration changes they ask for before starting the new version.
+  </Step>
+  <Step title="Go to your plamotrack folder">
+    ```bash
+    cd ~/plamotrack
+    ```
+  </Step>
+  <Step title="Download the new version's files">
+    Use the number of the version you're updating to; the newest is **v0.5.2-alpha**. Run this as one line. It replaces the old release files, and your `.env` stays as it is:
+
+    ```bash
+    for f in docker-compose.yml env.example plamotrack-gunpla.zip release.json SHA256SUMS; do curl -fsSLO "https://github.com/DeusMaximus/plamotrack/releases/download/v0.5.2-alpha/$f"; done
+    ```
+  </Step>
+  <Step title="Check the files">
+    <Tabs>
+      <Tab title="Windows or Linux">
+        ```bash
+        sha256sum -c SHA256SUMS
+        ```
+      </Tab>
+      <Tab title="macOS">
+        ```bash
+        shasum -a 256 -c SHA256SUMS
+        ```
+      </Tab>
+    </Tabs>
+
+    Every file should say **OK**. Don't start the new version from files that fail this check.
+  </Step>
+  <Step title="Start the new version">
+    ```bash
+    docker compose up -d --no-build --wait
+    ```
+
+    The `migrate` service applies any new database migrations before the API starts. You do not run a separate migration command.
+  </Step>
+  <Step title="Check the result">
+    ```bash
+    docker compose ps -a
+    docker compose logs migrate
+    ```
+
+    The `db`, `api` and `web` services should be running. `migrate` should have finished with `Exited (0)`. Open the app and follow any setup steps in the release notes.
+  </Step>
+</Steps>
 
 **If the update fails**, read the migration output and [Troubleshooting](/configuration/troubleshooting) before continuing. Keep your database intact. To go back, download the previous version's files the same way and run the same `up`. That's safe when the release notes say the two versions share a database schema. Across a migration, use the previous version with your pre-update backup, following [the restore guide](/configuration/backups#restoring-a-dump). Some database downgrades discard data; exceptions are called out below.
 
@@ -88,19 +118,40 @@ Versions before v0.5.2-alpha were installed with `git clone` and built on your c
   </Step>
 </Steps>
 
-**Why the folder's name matters:** Docker names your database after the folder. The new folder has the same name, so it finds the same database. The old folder, now `plamotrack-source`, would start a separate, empty plamotrack if you ran it, and can't touch yours. Once you're happy with the move, you can delete it.
+**Why the folder's name matters:** Docker Compose uses the folder's name to name the volume that holds your database. The new folder has the same name, so it uses the same volume and finds the same database. The old folder, now `plamotrack-source`, would get a volume of its own: if you ran it, it would start a separate, empty plamotrack and couldn't touch yours. Once you're happy with the move, you can delete it.
 
 **To go back:** run `docker compose down` in `~/plamotrack`. Then swap the folder names back with `cd ~ && mv plamotrack plamotrack-release && mv plamotrack-source plamotrack`, and run `docker compose up -d --build --wait` in the Git folder. Your database is the same one either way.
 
 <Accordion title="Updating a Git installation instead">
-  If you'd rather keep building from Git, add these two lines at the top of your `.env` before updating. An installation set up from v0.5.0-alpha or earlier doesn't have them:
+  If you'd rather keep building from Git:
 
-  ```ini
-  COMPOSE_PATH_SEPARATOR=:
-  COMPOSE_FILE=docker-compose.yml:docker-compose.build.yml
-  ```
+  <Steps>
+    <Step title="Back up">
+      Follow [Backups](/configuration/backups).
+    </Step>
+    <Step title="Add two lines to your .env">
+      An installation set up from v0.5.0-alpha or earlier doesn't have them. Add them at the top of `.env`:
 
-  Without them, the update stops with `error from registry: denied` before changing anything. Then back up, run `git pull`, and run `docker compose up -d --build --wait`. Keep `--build` on every update.
+      ```ini
+      COMPOSE_PATH_SEPARATOR=:
+      COMPOSE_FILE=docker-compose.yml:docker-compose.build.yml
+      ```
+
+      Without them, the update stops with `error from registry: denied` before changing anything.
+    </Step>
+    <Step title="Pull the code">
+      ```bash
+      git pull
+      ```
+    </Step>
+    <Step title="Rebuild">
+      ```bash
+      docker compose up -d --build --wait
+      ```
+
+      Keep `--build` on every update.
+    </Step>
+  </Steps>
 </Accordion>
 
 ## Changelog
@@ -119,7 +170,7 @@ Versions before v0.5.2-alpha were installed with `git clone` and built on your c
   COMPOSE_FILE=docker-compose.yml:docker-compose.build.yml
   ```
 
-  Without them, the update stops with `error from registry: denied` before changing anything. Better still, move it onto the release files: see [If you installed with Git](#if-you-installed-with-git). Returning to `v0.5.0-alpha` means checking out that tag and **removing those two lines** (0.5.0 has no `docker-compose.build.yml`), then rebuilding. Moving an existing installation onto the release files keeps its folder name, and with it the same database.
+  Without them, the update stops with `error from registry: denied` before changing anything. Better still, move it onto the release files: see [If you installed with Git](#if-you-installed-with-git). Returning to `v0.5.0-alpha` means checking out that tag and **removing those two lines** (0.5.0 has no `docker-compose.build.yml`), then rebuilding. Moving an existing installation onto the release files keeps its folder name, and with it the same database volume.
 
   **Known limitations at release:** On the stock steppers, keyboard focus is not kept on the button after a press ([#268](https://github.com/DeusMaximus/plamotrack/issues/268)). The order-dialog limitation from 0.4.0 is still open ([#238](https://github.com/DeusMaximus/plamotrack/issues/238)).
 

@@ -10,21 +10,21 @@ Allow time to install Docker. After that, setup is a short sequence of commands,
 
 ## Before you start
 
-You need **Docker with Docker Compose**, a web browser and a plain-text editor.
+You need **Docker with Docker Compose**, **curl** to download the release files, a web browser and a plain-text editor.
 
 <Tabs>
   <Tab title="Windows">
-    Install [Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/) and follow its WSL 2 setup instructions. Install [Git for Windows](https://git-scm.com/install/windows) as well. plamotrack doesn't use Git itself, but Git for Windows includes **Git Bash**, a terminal that runs the commands in this guide exactly as written.
+    Install [Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/) and follow its WSL 2 setup instructions. Install [Git for Windows](https://git-scm.com/install/windows) as well. plamotrack doesn't use Git itself, but Git for Windows includes **Git Bash**, a terminal that runs the commands in this guide exactly as written and includes curl.
 
     Start Docker Desktop and wait until its engine is running. Open **Git Bash** from the Start menu. Run the commands in this guide there.
   </Tab>
   <Tab title="macOS">
-    Install [Docker Desktop for Mac](https://docs.docker.com/desktop/setup/install/mac-install/) or [OrbStack](https://docs.orbstack.dev/install).
+    Install [Docker Desktop for Mac](https://docs.docker.com/desktop/setup/install/mac-install/) or [OrbStack](https://docs.orbstack.dev/install). macOS already includes curl.
 
     Start Docker Desktop/OrbStack and wait until its engine is running. Open **Terminal** from **Applications → Utilities**. Run the commands in this guide there.
   </Tab>
   <Tab title="Linux">
-    Install [Docker Engine](https://docs.docker.com/engine/install/) and the [Docker Compose plugin](https://docs.docker.com/compose/install/linux/), or use Docker Desktop.
+    Install [Docker Engine](https://docs.docker.com/engine/install/) and the [Docker Compose plugin](https://docs.docker.com/compose/install/linux/), or use Docker Desktop. Install curl too if your distribution doesn't include it (`sudo apt install curl` on Debian and Ubuntu).
 
     Open your distribution's **Terminal**. Follow Docker's installation instructions for starting its service and running Docker commands as your user.
   </Tab>
@@ -35,9 +35,10 @@ A terminal is the window where you enter commands. Copy one line at a time, pres
 ```bash
 docker --version
 docker compose version
+curl --version
 ```
 
-If a command is not found, finish installing Docker and reopen the terminal.
+If a command is not found, finish installing that prerequisite and reopen the terminal.
 
 ## Install plamotrack
 
@@ -54,7 +55,7 @@ These steps install **v0.5.2-alpha**. If the [releases page](https://github.com/
 
     This creates a `plamotrack` folder in your home folder and moves your terminal into it.
 
-    **Run every remaining command from this folder.** If you close the terminal and come back later, run `cd ~/plamotrack` first. Keep the folder and its name: Docker names your database after it, and you'll use it to stop, start and update the app.
+    **Run every remaining command from this folder.** If you close the terminal and come back later, run `cd ~/plamotrack` first. Keep the folder and its name: Docker Compose uses the folder's name to name the volume that holds your database. You'll use the folder to stop, start and update the app.
   </Step>
   <Step title="Download the release files">
     Run this as one line:
