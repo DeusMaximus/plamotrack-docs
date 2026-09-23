@@ -44,6 +44,27 @@ If you checked out a release tag instead of `main`, select the published tag you
 
 ## Changelog
 
+<Update label="v0.5.2-alpha" description="23 September 2026">
+  ## Install with Docker alone
+
+  - **Each release now carries its own install files.** The release page has a `docker-compose.yml` with every image pinned by digest, for both `linux/amd64` and `linux/arm64`, plus `env.example`, the Gunpla skill's `plamotrack-gunpla.zip`, `release.json` and `SHA256SUMS`. In an empty directory, check the files with `sha256sum -c SHA256SUMS`, copy `env.example` to `.env`, set the database password, and run `docker compose up -d --no-build --wait`. No Git checkout or registry login is needed.
+  - **No moving channel.** There is no `latest` tag. Updating means choosing the next version on purpose.
+  - The application itself is unchanged from 0.5.0. There is no 0.5.1: that version was tagged but never published, because GitHub renamed one of its files on upload.
+
+  **Update notes:** From 0.5.0 there are no migrations, authentication changes or new settings. **A source installation needs two lines at the top of `.env` before it updates:**
+
+  ```ini
+  COMPOSE_PATH_SEPARATOR=:
+  COMPOSE_FILE=docker-compose.yml:docker-compose.build.yml
+  ```
+
+  Without them, the update stops with `error from registry: denied` before changing anything. See step 4 of [How to update plamotrack](#how-to-update-plamotrack). Returning to `v0.5.0-alpha` means checking out that tag and **removing those two lines** (0.5.0 has no `docker-compose.build.yml`), then rebuilding. Keep updating a source installation from source. Moving an existing installation onto the release files isn't covered yet: in a new directory they would start a new, empty collection.
+
+  **Known limitations at release:** On the stock steppers, keyboard focus is not kept on the button after a press ([#268](https://github.com/DeusMaximus/plamotrack/issues/268)). The order-dialog limitation from 0.4.0 is still open ([#238](https://github.com/DeusMaximus/plamotrack/issues/238)).
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.5.2-alpha)
+</Update>
+
 <Update label="v0.5.0-alpha" description="20 September 2026">
   ## plamotrack on a phone and a tablet
 
