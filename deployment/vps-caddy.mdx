@@ -64,15 +64,17 @@ Both permissions are required. The Cloudflare DNS module reads the zone ID befor
   <Step title="Hook the token into the Caddy service">
     ```bash
     sudo install -d /etc/systemd/system/caddy.service.d
-    sudo cp deploy/caddy/caddy.service.d/cloudflare.conf /etc/systemd/system/caddy.service.d/
+    printf '[Service]\nEnvironmentFile=/etc/caddy/cloudflare.env\n' | sudo tee /etc/systemd/system/caddy.service.d/cloudflare.conf
     sudo systemctl daemon-reload
     ```
+
+    The two lines hand Caddy the token from that root-only file. They're the repository's [`deploy/caddy/caddy.service.d/cloudflare.conf`](https://github.com/DeusMaximus/plamotrack/blob/main/deploy/caddy/caddy.service.d/cloudflare.conf) without its comments.
   </Step>
 </Steps>
 
 ## Configure Caddy
 
-Copy `deploy/caddy/Caddyfile` from the plamotrack repository to `/etc/caddy/Caddyfile` and replace the hostname with your own:
+Replace the contents of `/etc/caddy/Caddyfile` (`sudoedit /etc/caddy/Caddyfile`) with this, using your own hostname. It's the repository's [`deploy/caddy/Caddyfile`](https://github.com/DeusMaximus/plamotrack/blob/main/deploy/caddy/Caddyfile) without its comments:
 
 ```caddyfile
 plamotrack.example {
@@ -101,7 +103,7 @@ Then start Caddy and bring the stack up:
 
 ```bash
 sudo systemctl restart caddy
-docker compose up -d --build --wait
+docker compose up -d --no-build --wait
 ```
 
 **What each line does:**

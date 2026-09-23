@@ -19,7 +19,7 @@ Two readers, one site. The **Get Started** and **Using plamotrack** groups are f
 - The six kit statuses are spelled as the UI spells them: **Pre-ordered**, **Ordered**, **In Transit**, **Backlog**, **Building**, **Complete**. In CSV columns and API fields they are `pre_ordered`, `ordered`, `in_transit`, `backlog`, `building`, `complete` — code formatting, never translated.
 - A **kit** is one physical model; two copies are two kits. A **catalog** is one of the four inventory tables — **Tools**, **Consumables**, **Upgrades**, **Display** — named as the Inventory tabs name them. A **retailer** is a shop. The **owner** is the one account an instance has. A **personal access token** is the credential for scripts and MCP clients; do not shorten it to "API key".
 - Money is stored in minor units with a currency code; the docs say "reference currency" for the instance default, never "base currency".
-- Settings, environment keys, file names, commands and URLs are code-formatted: `PUBLIC_BASE_URL`, `.env`, `docker compose up -d --build --wait`.
+- Settings, environment keys, file names, commands and URLs are code-formatted: `PUBLIC_BASE_URL`, `.env`, `docker compose up -d --no-build --wait`.
 
 ## Screenshots
 

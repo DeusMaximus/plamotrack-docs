@@ -1,30 +1,30 @@
 ---
 title: "Install plamotrack with Docker"
 sidebarTitle: "Installation"
-description: "Install Docker and Git, create your settings file, and start plamotrack on Windows, macOS or Linux. Then claim your instance and add your first kit."
+description: "Download a plamotrack release, create your settings file, and start it with Docker on Windows, macOS or Linux. Then claim your instance and add your first kit."
 ---
 
-plamotrack runs on a computer or server you control. Docker starts the app and its database together, so you do not need to install Python, Node.js or Postgres yourself.
+plamotrack runs on a computer or server you control. Each release comes with a small set of files that tell Docker exactly which tested images to run. Docker then starts the app and its database together, so you don't need to install Python, Node.js or Postgres yourself, and nothing is built on your computer.
 
-Allow time to install the prerequisites and download and build the images. With everything already installed, setup is a short sequence of commands; the first build can take longer than three minutes, depending on your computer and connection.
+Allow time to install Docker. After that, setup is a short sequence of commands, and the first start takes a minute or two while Docker downloads the images.
 
 ## Before you start
 
-You need **Docker with Docker Compose**, **Git**, a web browser and a plain-text editor.
+You need **Docker with Docker Compose**, a web browser and a plain-text editor.
 
 <Tabs>
   <Tab title="Windows">
-    Install [Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/) and follow its WSL 2 setup instructions. Install [Git for Windows](https://git-scm.com/install/windows), which includes **Git Bash**.
+    Install [Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/) and follow its WSL 2 setup instructions. Install [Git for Windows](https://git-scm.com/install/windows) as well. plamotrack doesn't use Git itself, but Git for Windows includes **Git Bash**, a terminal that runs the commands in this guide exactly as written.
 
     Start Docker Desktop and wait until its engine is running. Open **Git Bash** from the Start menu. Run the commands in this guide there.
   </Tab>
   <Tab title="macOS">
-    Install [Docker Desktop for Mac](https://docs.docker.com/desktop/setup/install/mac-install/) or [OrbStack](https://docs.orbstack.dev/install) and [Git](https://git-scm.com/install/mac).
+    Install [Docker Desktop for Mac](https://docs.docker.com/desktop/setup/install/mac-install/) or [OrbStack](https://docs.orbstack.dev/install).
 
     Start Docker Desktop/OrbStack and wait until its engine is running. Open **Terminal** from **Applications → Utilities**. Run the commands in this guide there.
   </Tab>
   <Tab title="Linux">
-    Install [Docker Engine](https://docs.docker.com/engine/install/) and the [Docker Compose plugin](https://docs.docker.com/compose/install/linux/), or use Docker Desktop. Install [Git for your distribution](https://git-scm.com/install/linux).
+    Install [Docker Engine](https://docs.docker.com/engine/install/) and the [Docker Compose plugin](https://docs.docker.com/compose/install/linux/), or use Docker Desktop.
 
     Open your distribution's **Terminal**. Follow Docker's installation instructions for starting its service and running Docker commands as your user.
   </Tab>
@@ -33,34 +33,65 @@ You need **Docker with Docker Compose**, **Git**, a web browser and a plain-text
 A terminal is the window where you enter commands. Copy one line at a time, press **Enter**, and wait for it to finish before entering the next. These commands should show version information:
 
 ```bash
-git --version
 docker --version
 docker compose version
 ```
 
-If a command is not found, finish installing that prerequisite and reopen the terminal.
+If a command is not found, finish installing Docker and reopen the terminal.
 
 ## Install plamotrack
 
+These steps install **v0.5.2-alpha**. If the [releases page](https://github.com/DeusMaximus/plamotrack/releases) lists a newer version, use its number in place of `v0.5.2-alpha`.
+
 <Steps>
-  <Step title="Download the project">
+  <Step title="Make a folder for plamotrack">
     In your terminal, run:
 
     ```bash
-    cd ~
-    git clone https://github.com/DeusMaximus/plamotrack.git
-    cd plamotrack
+    mkdir -p ~/plamotrack
+    cd ~/plamotrack
     ```
 
-    This creates a `plamotrack` folder in your home folder. The final command moves your terminal into it.
+    This creates a `plamotrack` folder in your home folder and moves your terminal into it.
 
-    **Run every remaining command from this folder.** If you close the terminal and come back later, run `cd ~/plamotrack` first. Keep the folder: you will use it to stop, start and update the app.
+    **Run every remaining command from this folder.** If you close the terminal and come back later, run `cd ~/plamotrack` first. Keep the folder and its name: Docker names your database after it, and you'll use it to stop, start and update the app.
   </Step>
-  <Step title="Create your settings file">
-    Copy the supplied example:
+  <Step title="Download the release files">
+    Run this as one line:
 
     ```bash
-    cp .env.example .env
+    for f in docker-compose.yml env.example plamotrack-gunpla.zip release.json SHA256SUMS; do curl -fsSLO "https://github.com/DeusMaximus/plamotrack/releases/download/v0.5.2-alpha/$f"; done
+    ```
+
+    Then check that the files arrived intact:
+
+    <Tabs>
+      <Tab title="Windows or Linux">
+        ```bash
+        sha256sum -c SHA256SUMS
+        ```
+      </Tab>
+      <Tab title="macOS">
+        ```bash
+        shasum -a 256 -c SHA256SUMS
+        ```
+      </Tab>
+    </Tabs>
+
+    Each of the four files should say **OK**. If any says **FAILED**, delete the folder's contents and download them again. Don't start the app from files that fail this check.
+
+    | File | What it is |
+    | --- | --- |
+    | `docker-compose.yml` | Which images to run, each pinned to the exact tested build |
+    | `env.example` | The settings template you copy in the next step |
+    | `plamotrack-gunpla.zip` | The Gunpla skill for your AI assistant, if you use one: see [Agent Skills](/mcp/agent-skills) |
+    | `release.json`, `SHA256SUMS` | The release's record and the checksums you just checked |
+  </Step>
+  <Step title="Create your settings file">
+    Copy the settings template:
+
+    ```bash
+    cp env.example .env
     ```
 
     The new `.env` file is in the `plamotrack` folder. Its name starts with a dot, so your file manager may hide it.
@@ -115,10 +146,10 @@ If a command is not found, finish installing that prerequisite and reopen the te
     Back in the terminal, run:
 
     ```bash
-    docker compose up -d --build --wait
+    docker compose up -d --no-build --wait
     ```
 
-    Docker downloads dependencies, builds the app, prepares the database and starts the services. Keep `--build` in the command, including on the first run.
+    Docker downloads the images, prepares the database and starts the services. No login to any registry is needed.
 
     Wait for the command to finish successfully and return to your terminal prompt. You can check the containers with:
 
@@ -162,7 +193,7 @@ WEB_PORT=9090
 Then apply the change from your `plamotrack` folder:
 
 ```bash
-docker compose up -d --build --wait
+docker compose up -d --no-build --wait
 ```
 
 Open `http://localhost:9090` instead, and use that port in the First Run guide too.
