@@ -16,7 +16,7 @@ A script can fetch the same archive with a [personal access token](/authenticati
 curl -H "Authorization: Bearer ptk_…" -o plamotrack-archive.zip http://127.0.0.1:8080/api/export/archive
 ```
 
-The archive is read from a single database snapshot, so an export taken while an assistant is adding an order gives you the collection as it stood when the export began, never a mix of before and after. It never carries credentials, so it is safe to keep anywhere, and it still opens in a future version whose schema has moved on — though it restores more slowly than a dump and does not preserve ids exactly. Keep both: the dump is what you restore from on Sunday; the archive is what still opens in three years. See [Import & Export](/using/import-export) for the format.
+The archive is read from a single database snapshot, so an export taken while an assistant is adding an order gives you the collection as it stood when the export began, never a mix of before and after. It never carries credentials, so it is safe to keep anywhere, and it still opens in a future version whose schema has moved on — though it restores more slowly than a dump. Restored into an empty instance, it keeps every record's ID. Merged into one that already has your retailers, catalog items or orders, it reuses those instead of creating copies. Keep both: the dump is what you restore from on Sunday; the archive is what still opens in three years. See [Import & Export](/using/import-export) for the format.
 
 ## Database backup with pg_dump
 
