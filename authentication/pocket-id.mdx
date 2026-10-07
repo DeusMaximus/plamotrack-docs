@@ -74,6 +74,8 @@ This is the setup plamotrack was tested with: Pocket ID v2.16.0 on the same host
     }
     ```
 
+    Use the same certificate path as plamotrack's own site block. The block above is the DNS-01 one, the tested path. If you use Caddy's default HTTP challenge instead (the host is reachable on ports 80 and 443, as [VPS + Caddy](/deployment/vps-caddy) describes), delete its `tls { … }` block: without the Cloudflare module, Caddy refuses a Caddyfile that names it, and that would stop plamotrack's site too.
+
     Then restart Caddy:
 
     ```bash
