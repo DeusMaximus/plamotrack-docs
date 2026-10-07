@@ -76,8 +76,9 @@ This is the setup plamotrack was tested with: Pocket ID v2.16.0 on the same host
 
     Use the same certificate path as plamotrack's own site block. The block above is the DNS-01 one, the tested path. If you use Caddy's default HTTP challenge instead (the host is reachable on ports 80 and 443, as [VPS + Caddy](/deployment/vps-caddy) describes), delete its `tls { … }` block: without the Cloudflare module, Caddy refuses a Caddyfile that names it, and that would stop plamotrack's site too.
 
-    Then restart Caddy:
+  </Step>
 
+  <Step title="Restart Caddy">
     ```bash
     sudo systemctl restart caddy
     ```
@@ -129,7 +130,7 @@ plamotrack needs one client in Pocket ID. It carries both the browser login and 
   </Step>
 
   <Step title="Let your account use it">
-    A client created in Pocket ID's admin area is restricted to user groups by default, so no one can sign in through it yet. Either add your account to a group the client allows, or turn the group restriction off.
+    A client created in Pocket ID's admin area is restricted to user groups by default, so no one can sign in through it yet. Add your account to a group the client allows.
   </Step>
 
   <Step title="Note the client ID and secret">
@@ -139,7 +140,7 @@ plamotrack needs one client in Pocket ID. It carries both the browser login and 
 
 You don't register plamotrack's `/mcp` with Pocket ID in any other way. Assistants register with plamotrack, not with Pocket ID, so Pocket ID only ever sees this one client.
 
-## Update plamotrack's .env
+## Update plamotrack's `.env`
 
 Add these to plamotrack's `.env`, then restart the stack:
 
@@ -186,26 +187,45 @@ Pocket ID has to be reachable from your browser and from the plamotrack host. It
 
 Back up Pocket ID alongside plamotrack's [backups](/configuration/backups). Without Pocket ID's data you can't sign in, and without its `ENCRYPTION_KEY` that data is useless: under a different key, Pocket ID doesn't start.
 
-A backup is two things:
+Pocket ID marks its export as experimental.
 
-- **Pocket ID's export**, from its own directory on the host:
+<Steps>
+  <Step title="Export Pocket ID's data">
+    From Pocket ID's directory on the host:
 
-  ```bash
-  docker compose exec -T pocket-id ./pocket-id export --path - > pocket-id-export.zip
-  chmod 600 pocket-id-export.zip
-  ```
+    ```bash
+    docker compose exec -T pocket-id ./pocket-id export --path - > pocket-id-export.zip
+    ```
+  </Step>
+  <Step title="Keep the export private">
+    ```bash
+    chmod 600 pocket-id-export.zip
+    ```
+  </Step>
+  <Step title="Keep Pocket ID's .env with it">
+    Copy Pocket ID's `.env`, which holds the `ENCRYPTION_KEY`, to the same place as the export.
+  </Step>
+</Steps>
 
-  Pocket ID marks its export as experimental.
-- **Pocket ID's `.env`**, with the `ENCRYPTION_KEY`.
+### Restore Pocket ID
 
-To restore into a fresh volume, put the `.env` back, then import and start:
+<Steps>
+  <Step title="Put the .env back">
+    Copy the saved `.env` into Pocket ID's directory on the host.
+  </Step>
+  <Step title="Import the export into a fresh volume">
+    ```bash
+    docker compose run --rm -T pocket-id ./pocket-id import --yes --path - < pocket-id-export.zip
+    ```
+  </Step>
+  <Step title="Start Pocket ID">
+    ```bash
+    docker compose up -d
+    ```
+  </Step>
+</Steps>
 
-```bash
-docker compose run --rm -T pocket-id ./pocket-id import --yes --path - < pocket-id-export.zip
-docker compose up -d
-```
-
-A restore keeps your passkeys and your account's identity, so you are still the owner of plamotrack, and assistants linked before the backup stay linked.
+A restore keeps your passkeys. It also keeps your account's identity, so you are still the owner of plamotrack. Assistants linked before the backup stay linked.
 
 ## If you lose your passkey
 
