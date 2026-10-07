@@ -23,7 +23,7 @@ When your AI assistant connects to plamotrack, it has access to over 30 tools or
 ## Kits
 
 <Accordion title="list_kits">
-  Lists kits in your collection, with optional filters for status, grade, or series. Use `sort=recent` to surface kits that moved most recently; use `limit` to cap the number returned.
+  Lists kits in your collection, with optional filters for status, grade, or series. Use `sort=completed` or `sort=started` to order by the build's own dates, `sort=recent` for the kits that moved most recently, or `sort=newest` for the latest added; use `limit` to cap the number returned.
 </Accordion>
 
 <Accordion title="list_kit_series">
@@ -95,7 +95,7 @@ These tools cover tools, consumables, upgrade parts, and display gear.
 ## Orders
 
 <Accordion title="create_order">
-  Creates a full order with line items. Kit lines fan out into individual kit rows (two Zakus on one line becomes two separate kits in your collection). Retailers are matched by name or created automatically if they don't exist yet. Every item line carries its own `currency_code`; only the order-level `currency_code` may be omitted, in which case the instance's reference currency is used.
+  Creates a full order with line items. Kit lines fan out into individual kit rows (two Zakus on one line becomes two separate kits in your collection). Name the shop with `retailer_id`, an id from `list_retailers`, or with `retailer`, a name: matched case-insensitively, or created if it doesn't exist yet. An id passed as `retailer` is refused rather than becoming a new shop's name. Every item line carries its own `currency_code`; only the order-level `currency_code` may be omitted, in which case the instance's reference currency is used.
 </Accordion>
 
 <Accordion title="list_orders">

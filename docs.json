@@ -62,6 +62,7 @@
               "authentication/overview",
               "authentication/password-login",
               "authentication/oidc",
+              "authentication/pocket-id",
               "authentication/access-tokens"
             ]
           },
