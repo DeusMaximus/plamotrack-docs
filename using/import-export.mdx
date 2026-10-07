@@ -6,7 +6,7 @@ description: "Export your collection as plain CSVs and import back to restore or
 
 Your collection data is always yours. Export it as a ZIP of plain CSVs, import it back at any time, or move it to a new instance. Every import shows you a full preview of what will change before anything is written — nothing is committed until you click **Apply import**.
 
-All import and export options live in **Settings → Data management**. On a phone that section offers the exports only: importing and the blank templates need a screen at least 768 px wide — a tablet or a computer ([Phone & Tablet](/using/phone-and-tablet#what-a-phone-leaves-out)).
+All import and export options live in **Settings → Data management**. A phone imports too, with **Merge** or **Add only**. **Replace everything** and the full template pack need a screen at least 768 px wide — a tablet or a computer ([Phone & Tablet](/using/phone-and-tablet#what-a-phone-leaves-out)).
 
 ## Getting data out
 
@@ -27,7 +27,7 @@ If you're coming from a spreadsheet, Notion, or Baserow, the **starter sheet** i
 
 <Steps>
   <Step title="Download the starter sheet">
-    Go to **Settings → Data management** and, under **Blank templates**, click **Starter sheet (.csv)**. The download includes three example rows to overwrite.
+    Go to **Settings → Data management** and click **Starter sheet (.csv)**, under **Blank templates** on a tablet or computer. The download includes three example rows to overwrite.
   </Step>
   <Step title="Fill it in">
     Add one row per kit. The key columns are:
@@ -45,9 +45,11 @@ If you're coming from a spreadsheet, Notion, or Baserow, the **starter sheet** i
     | `received` | `yes` or `no`. Blank defaults to `yes`. Set to `no` for orders still on their way. |
 
     You don't need to describe orders separately. Write the kits; plamotrack works out the retailers, orders, and order lines from the rows.
+
+    Numbers follow the same rules as the app's own forms: a rating is 1 to 5, a quantity starts at 1, and prices, costs, stock levels and low-stock thresholds can't be negative. A value outside these is refused in the preview, which names its row and column.
   </Step>
   <Step title="Import the sheet">
-    Go to **Settings → Data management → Import**. Drop your filled-in sheet on the upload area or browse for it, leave **If something already exists** on **Merge**, and click **Preview changes**. Review the preview, then click **Apply import** when it looks right.
+    Go to **Settings → Data management → Import**. Drop your filled-in sheet on the upload area or click **or browse for one** (on a phone, **Choose a file**), leave **If something already exists** on **Merge**, and click **Preview changes**. Review the preview, then click **Apply import** when it looks right.
   </Step>
 </Steps>
 
@@ -75,6 +77,10 @@ Every import — regardless of mode — shows you a full preview of what will ch
   <img className="block dark:hidden" src="/images/screenshots/import-preview-light.png" alt="The Import card after Preview changes: a starter sheet read as 9 new and 2 unchanged, with the retailers, orders, order lines and kits it would create listed by row." />
   <img className="hidden dark:block" src="/images/screenshots/import-preview.png" alt="The Import card after Preview changes: a starter sheet read as 9 new and 2 unchanged, with the retailers, orders, order lines and kits it would create listed by row." />
 </Frame>
+
+If the preview or the import fails, the message appears inside the **Import** card, beside the button you pressed.
+
+Once you click **Apply import**, the import runs to the end even if you go to another page. Come back to **Data management** while it runs and it shows as under way (**Importing — Merge…**), with no file to pick until it finishes; come back after and it shows how it ended, once. Reloading or closing the tab while it runs asks you first, because that would lose the result.
 
 The apply step checks against a fingerprint of what you previewed. If your collection changed between the preview and the apply (because you moved a kit or received an order in the meantime), plamotrack refuses and asks you to preview again. You only ever apply exactly what you reviewed.
 

@@ -1,0 +1,256 @@
+---
+title: "Sign in to plamotrack with a passkey through Pocket ID"
+sidebarTitle: "Pocket ID"
+description: "Use Pocket ID, a self-hosted OpenID Connect provider, to sign in to plamotrack with a passkey and link AI assistants over OAuth, with no Google or other cloud account."
+---
+
+[Pocket ID](https://pocket-id.org) is a small, self-hosted OpenID Connect provider that signs you in with a passkey instead of a password. Pair it with plamotrack's [OIDC mode](/authentication/oidc) and you get passkey sign-in, plus OAuth links for Claude.ai and the other web assistants, without an account at Google or any other cloud provider.
+
+Pocket ID is an optional, supported provider from v0.6.0-alpha. It needs nothing special from plamotrack: one client in Pocket ID and the usual OIDC settings in `.env`.
+
+<Note>
+  Pocket ID is a second service you run and back up alongside plamotrack. If you already have a Google account you're happy to sign in with, the [OIDC page](/authentication/oidc) is less to maintain.
+</Note>
+
+## What you need
+
+- **Its own hostname**, such as `id.example`. Pocket ID can't live under a path of another site.
+- **HTTPS on that hostname.** Passkeys only work on a secure origin. If you followed [VPS + Caddy](/deployment/vps-caddy), a second site block in the same Caddyfile does it.
+- **A persistent volume** for Pocket ID's data.
+- **An `ENCRYPTION_KEY`** for Pocket ID, kept with your backups. It encrypts Pocket ID's signing keys; without it, a restore won't start.
+- plamotrack itself on an `https://` address, as [OIDC mode](/authentication/oidc) requires.
+
+<Warning>
+  Choose Pocket ID's hostname once. Every passkey is tied to it, so changing the hostname later leaves every passkey unusable.
+</Warning>
+
+## Run Pocket ID
+
+This is the setup plamotrack was tested with: Pocket ID v2.16.0 on the same host, behind Caddy. Pocket ID's own documentation covers its other options.
+
+<Steps>
+  <Step title="Generate an encryption key">
+    In a new directory for Pocket ID, create a `.env` file that only you can read, holding a random key:
+
+    ```bash
+    echo "ENCRYPTION_KEY=$(openssl rand -base64 32)" > .env && chmod 600 .env
+    ```
+
+    Copy this key to wherever you keep plamotrack's `.env` backup.
+  </Step>
+
+  <Step title="Create docker-compose.yml">
+    In the same directory, create `docker-compose.yml`, using your own hostname:
+
+    ```yaml
+    services:
+      pocket-id:
+        image: ghcr.io/pocket-id/pocket-id:v2.16.0
+        restart: unless-stopped
+        environment:
+          APP_URL: https://id.example
+          TRUST_PROXY: "true"
+          ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+        ports:
+          - "127.0.0.1:8081:1411"
+        volumes:
+          - data:/app/data
+    volumes:
+      data:
+    ```
+
+    `APP_URL` is the bare hostname, with no path. The port is published on loopback only, so Caddy is the only way in.
+  </Step>
+
+  <Step title="Add Pocket ID to Caddy">
+    Add a site block for the new hostname to `/etc/caddy/Caddyfile`, beside plamotrack's:
+
+    ```caddyfile
+    id.example {
+        reverse_proxy 127.0.0.1:8081
+        tls {
+            dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+        }
+    }
+    ```
+
+    Then restart Caddy:
+
+    ```bash
+    sudo systemctl restart caddy
+    ```
+  </Step>
+
+  <Step title="Start Pocket ID">
+    ```bash
+    docker compose up -d
+    ```
+
+    Open `https://id.example/.well-known/openid-configuration`. The `issuer` it shows is the value plamotrack needs — the bare `https://id.example`, with no trailing slash.
+  </Step>
+</Steps>
+
+## Create your account and a passkey
+
+Create your user in Pocket ID as its documentation describes. This account becomes the owner of your plamotrack instance.
+
+To sign in to Pocket ID without a passkey — the first time, or on a new device — get a one-time login code from Pocket ID's directory on the host:
+
+```bash
+docker compose exec pocket-id /app/pocket-id one-time-access-token <your-username>
+```
+
+Sign in with it, then add a passkey from your account settings in Pocket ID. A passkey saved to a password manager that syncs works on your phone as well as your computer.
+
+<Note>
+  Pocket ID's own access log records a login code in the request path when the code is used. Codes are single-use and short-lived, but treat that log as sensitive and don't share it.
+</Note>
+
+## Create the plamotrack client in Pocket ID
+
+plamotrack needs one client in Pocket ID. It carries both the browser login and the OAuth links for AI assistants.
+
+<Steps>
+  <Step title="Add an OIDC client">
+    In Pocket ID's admin area, add a new OIDC client named `plamotrack`.
+  </Step>
+
+  <Step title="Enter both callback URLs">
+    Add both of these, using your plamotrack address:
+
+    - `https://plamotrack.example/api/auth/oidc/callback` — the browser login
+    - `https://plamotrack.example/mcp/auth/callback` — AI assistants
+  </Step>
+
+  <Step title="Keep it confidential, with PKCE">
+    Leave the client confidential (not public), and turn PKCE on.
+  </Step>
+
+  <Step title="Let your account use it">
+    A client created in Pocket ID's admin area is restricted to user groups by default, so no one can sign in through it yet. Either add your account to a group the client allows, or turn the group restriction off.
+  </Step>
+
+  <Step title="Note the client ID and secret">
+    Copy the client ID and create a client secret. You'll need both in plamotrack's `.env`.
+  </Step>
+</Steps>
+
+You don't register plamotrack's `/mcp` with Pocket ID in any other way. Assistants register with plamotrack, not with Pocket ID, so Pocket ID only ever sees this one client.
+
+## Update plamotrack's .env
+
+Add these to plamotrack's `.env`, then restart the stack:
+
+```ini
+AUTH_MODE=oidc
+PUBLIC_BASE_URL=https://plamotrack.example
+OIDC_ISSUER=https://id.example                # exactly as Pocket ID's discovery document states it
+OIDC_CLIENT_ID=your-client-id
+OIDC_CLIENT_SECRET=your-client-secret
+MCP_OAUTH_SIGNING_KEY=<64 hex chars>          # run: openssl rand -hex 32
+```
+
+```bash
+docker compose up -d
+```
+
+## Claim the instance
+
+The first sign-in works as on the [OIDC page](/authentication/oidc#claim-the-instance-in-oidc-mode):
+
+<Steps>
+  <Step title="Enter the setup token">
+    Open plamotrack and enter the one-time setup token from the API log.
+  </Step>
+
+  <Step title="Sign in at Pocket ID">
+    plamotrack sends you to Pocket ID. Sign in with your passkey.
+  </Step>
+
+  <Step title="Allow plamotrack">
+    The first time, Pocket ID asks you to let plamotrack see your email and profile. Allow it. Pocket ID remembers the answer.
+  </Step>
+</Steps>
+
+Your Pocket ID account is now the owner. Any other Pocket ID user who tries to sign in is refused, and the refusal is recorded in the [audit log](/configuration/audit-log).
+
+## Link an AI assistant
+
+Connect Claude.ai, ChatGPT, Gemini Spark or Mistral as described in [Web clients (OAuth)](/mcp/claude-web-chatgpt). When the assistant sends you to sign in, you sign in at Pocket ID with your passkey.
+
+Pocket ID has to be reachable from your browser and from the plamotrack host. It doesn't have to be reachable from the internet: the assistant talks only to plamotrack, and plamotrack talks to Pocket ID on its behalf. This was tested with Claude.ai and a Pocket ID on a private network.
+
+## Back up Pocket ID
+
+Back up Pocket ID alongside plamotrack's [backups](/configuration/backups). Without Pocket ID's data you can't sign in, and without its `ENCRYPTION_KEY` that data is useless: under a different key, Pocket ID doesn't start.
+
+A backup is two things:
+
+- **Pocket ID's export**, from its own directory on the host:
+
+  ```bash
+  docker compose exec -T pocket-id ./pocket-id export --path - > pocket-id-export.zip
+  chmod 600 pocket-id-export.zip
+  ```
+
+  Pocket ID marks its export as experimental.
+- **Pocket ID's `.env`**, with the `ENCRYPTION_KEY`.
+
+To restore into a fresh volume, put the `.env` back, then import and start:
+
+```bash
+docker compose run --rm -T pocket-id ./pocket-id import --yes --path - < pocket-id-export.zip
+docker compose up -d
+```
+
+A restore keeps your passkeys and your account's identity, so you are still the owner of plamotrack, and assistants linked before the backup stay linked.
+
+## If you lose your passkey
+
+Losing a passkey doesn't change your identity, so plamotrack needs no recovery step.
+
+<Steps>
+  <Step title="Get a login code">
+    Run this from Pocket ID's directory on the host.
+
+    ```bash
+    docker compose exec pocket-id /app/pocket-id one-time-access-token <your-username>
+    ```
+  </Step>
+
+  <Step title="Sign in and add a new passkey">
+    Sign in to Pocket ID with the code, then add a new passkey from your account settings.
+  </Step>
+
+  <Step title="Sign in to plamotrack">
+    Sign in as usual. You are still the owner.
+  </Step>
+</Steps>
+
+<Warning>
+  A login code needs a Pocket ID admin or a shell on the host. On a single-owner install the only admin is usually you, so if you lose your only passkey and can't reach the host, you can't get back in. Keep a passkey in a password manager that syncs, or register a second one.
+</Warning>
+
+`rebind-oidc`, on the [OIDC page](/authentication/oidc#lost-access-to-your-provider-account), is only for moving the instance to a *different* account or provider.
+
+## Revoking an assistant is local to plamotrack
+
+Pocket ID has no endpoint for revoking tokens. When a link ends at plamotrack — the assistant revokes it, or you run `rebind-oidc` — plamotrack ends it at once, but it has nothing to call at Pocket ID. The refresh token Pocket ID issued for that link stays valid at Pocket ID until it expires — 30 days by default. plamotrack never accepts it again, so the assistant stays disconnected. Nothing for you to do.
+
+## Upgrading from an earlier release
+
+Before v0.6.0-alpha, linking an assistant through Pocket ID only worked if you had registered your instance's `/mcp` as an API in Pocket ID. That's no longer needed.
+
+<Steps>
+  <Step title="Upgrade plamotrack">
+    Update as described in [Upgrading](/configuration/upgrading).
+  </Step>
+
+  <Step title="Delete the API registration">
+    In Pocket ID's admin area, delete the API you registered for your instance's `/mcp`.
+  </Step>
+
+  <Step title="Reconnect each assistant once">
+    Each assistant linked that way asks you to reconnect once. Reconnecting is the ordinary link: sign in at Pocket ID and you're done. Claude.ai asked even for a connector that had been removed and added again.
+  </Step>
+</Steps>

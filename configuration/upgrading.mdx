@@ -27,10 +27,10 @@ These steps are for an installation from the release files, as in [Installation]
     ```
   </Step>
   <Step title="Download the new version's files">
-    Use the number of the version you're updating to; the newest is **v0.5.2-alpha**. Run this as one line. It replaces the old release files, and your `.env` stays as it is:
+    Use the number of the version you're updating to; the newest is **v0.6.0-alpha**. Run this as one line. It replaces the old release files, and your `.env` stays as it is:
 
     ```bash
-    for f in docker-compose.yml env.example plamotrack-gunpla.zip release.json SHA256SUMS; do curl -fsSLO "https://github.com/DeusMaximus/plamotrack/releases/download/v0.5.2-alpha/$f"; done
+    for f in docker-compose.yml env.example plamotrack-gunpla.zip release.json SHA256SUMS; do curl -fsSLO "https://github.com/DeusMaximus/plamotrack/releases/download/v0.6.0-alpha/$f"; done
     ```
   </Step>
   <Step title="Check the files">
@@ -155,6 +155,30 @@ Versions before v0.5.2-alpha were installed with `git clone` and built on your c
 </Accordion>
 
 ## Changelog
+
+<Update label="v0.6.0-alpha" description="October 2026">
+  ## Import from a phone, and lists that fit
+
+  - **A phone imports.** **Settings → Data management** on a phone now imports as well as exports: tap **Choose a file**, pick a `.zip` archive or a `.csv`, preview it and apply it with **Merge** or **Add only**. **Replace everything** and the full template pack stay on a tablet or a computer; the starter sheet is on the phone too. See [Phone & Tablet](/using/phone-and-tablet#data-management-on-a-phone).
+  - **A phone shows every row.** Kits, Orders, Inventory and Retailers on a phone are one long list instead of ten a page; search and the filters narrow it. Tablets and computers still show ten a page.
+  - **Lists fit their space, whatever they hold.** From tablet width up, a list's table moves a column under the name when the whole table doesn't fit, and only then. A long word with no spaces in it — a product code run together, say — breaks across lines instead of pushing the row's edit button out of sight, on the lists and on Home. Ordinary rows look as they did.
+  - **Home** lists the bench by build start date and **Recently completed** by completion date, the dates the cards show. A Backlog or Recently completed row whose details don't fit beside the name puts them under it. **Kits** opens on **Newest added**, with **Oldest added**, **Recently started**, **Recently completed** and **Name A–Z**; "Newest first" is gone.
+  - **An import keeps going if you leave the page.** Come back to **Data management** to see it under way, then how it ended. An import with an out-of-range number — a rating outside 1 to 5, a negative price or stock level — is refused in the preview, naming the row and column, instead of failing when applied.
+  - **Settings** says an error beside the control that caused it, and shows dates and sizes in your saved format as soon as the page loads.
+  - **The keyboard stays where you pressed.** The stock steppers, **Export CSV**, **Save**, **Create token**, **Revoke** and **Sign in** keep the keyboard while they wait; where a button can't be pressed again, the keyboard moves to the next sensible control.
+  - **AI assistants.** `create_order` names its shop by `retailer_id` (from `list_retailers`) or by name; an id given as a name is refused instead of becoming a new shop. `list_kits` sorts by `newest`, `started` and `completed` as well as `recent`. In OIDC mode, an assistant now links through a provider that enforces RFC 8707 with no extra setup, and [Pocket ID](/authentication/pocket-id) is a supported provider.
+  - **Configuration.** A database password with punctuation in it no longer stops `migrate`, and a settings error at startup no longer prints fragments of `.env`'s secrets into the logs.
+
+  **Update notes:** This release has **one migration**. It clears any negative shipping cost or low-stock threshold to blank, then the database refuses one. Only an import made with an earlier version could have stored one; the `migrate` log says how many it cleared. Back up before updating, as always: returning to `v0.5.2-alpha` means restoring that backup. There are no new settings.
+
+  - **If you shared a log** from a startup settings error with an earlier version, rotate what it showed: the database password's first characters, or the end of `MCP_OAUTH_SIGNING_KEY` or `OIDC_CLIENT_SECRET`.
+  - **If you use Pocket ID and registered your instance's `/mcp` with it as an API**, delete that registration after updating. Your assistant asks you to reconnect once.
+  - **If an AI agent records orders for you**, it now names the shop by its id or its name. Refresh any agent skill built against an earlier version; the Gunpla skill in this release's files is up to date.
+
+  **Known limitations at release:** The order-dialog limitation from 0.4.0 is still open ([#238](https://github.com/DeusMaximus/plamotrack/issues/238)).
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.6.0-alpha)
+</Update>
 
 <Update label="v0.5.2-alpha" description="23 September 2026">
   ## Install with Docker alone
