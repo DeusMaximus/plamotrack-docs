@@ -55,7 +55,8 @@ This works on both the REST API (`/api/…`) and the MCP endpoint (`/mcp/`). Eve
 Regardless of permission level, no token can:
 
 - Change instance settings
-- Run a replace-all import
+- Run a **Replace everything** import
+- Run an import, in any mode, that would change an instance setting
 - Manage (create, view, or revoke) other tokens
 
 These actions require your owner browser session. This means a leaked token cannot lock you out or erase your collection.

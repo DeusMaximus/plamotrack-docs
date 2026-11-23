@@ -4,7 +4,7 @@ sidebarTitle: "Overview"
 description: "Choose between password login, OpenID Connect providers like Google, and personal access tokens for scripts and MCP clients in plamotrack."
 ---
 
-plamotrack has one owner account. You can sign in with a password, or delegate sign-in to an OpenID Connect provider like Google. Scripts, cron jobs, and AI assistants (Claude, ChatGPT) use personal access tokens instead of your session — they never touch your browser login.
+plamotrack has one owner account. You can sign in with a password, or delegate sign-in to an OpenID Connect provider like Google. Scripts, cron jobs, and AI assistants such as Claude Desktop and Claude Code use personal access tokens instead of your session — they never touch your browser login. In OIDC mode, web assistants such as Claude.ai and ChatGPT sign in through OAuth instead.
 
 <CardGroup cols={2}>
   <Card title="Password Login" icon="lock" href="/authentication/password-login">

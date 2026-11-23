@@ -12,7 +12,7 @@ All import and export options live in **Settings → Data management**. A phone 
 
 plamotrack gives you two ways to export:
 
-1. **Full archive (.zip)** — go to **Settings → Data management → Export**. You get one CSV per table plus a `manifest.json` that records the export timestamp, app version, and row counts. Use this for backups, moving instances, or keeping an offline copy.
+1. **Full archive (.zip)** — go to **Settings → Data management → Export**. You get one CSV per table plus a `manifest.json` that records the archive's format version, the export timestamp, the app version, and row counts. Use this for backups, moving instances, or keeping an offline copy.
 
 2. **Single table (.csv)** — one button per table in the Export section, or the **Export CSV** button at the top of any list page. Use this when you want to pull one table into a spreadsheet without the rest of the collection.
 
@@ -89,6 +89,17 @@ The apply step checks against a fingerprint of what you previewed. If your colle
 Every exported row includes a unique ID. Importing an archive back into the same instance matches those IDs to your existing records — so re-importing is always a no-op. Nothing changes, because nothing has changed. Use this freely for backup verification.
 
 Restoring an archive into a new, empty instance keeps those IDs too, so every record comes back exactly as it was exported.
+
+## Archives from another version
+
+An archive's `manifest.json` names the version of plamotrack that wrote it. An import checks two of its values, each on its own:
+
+- **`export_version`** is the archive's format. An archive in a newer format than your instance reads is refused, with a message to update plamotrack first. Archives in your instance's format or an older one import.
+- **`schema_version`** is the database migration the archive was exported from. One that differs from your instance's, in either direction, is a warning in the preview, and the import goes ahead.
+
+`app_version` is not checked. An archive from a newer release imports as long as its format is one your instance reads.
+
+v0.7.0-alpha writes `export_version` 2 and imports archives from every earlier release. v0.6.0-alpha and earlier refuse an archive written by v0.7.0-alpha and say to update first. To move a collection onto an older instance, update that instance first.
 
 ## Limits
 
