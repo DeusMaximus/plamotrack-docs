@@ -96,6 +96,8 @@ These tools cover tools, consumables, upgrade parts, and display gear.
 
 <Accordion title="create_order">
   Creates a full order with line items. Kit lines fan out into individual kit rows (two Zakus on one line becomes two separate kits in your collection). Name the shop with `retailer_id`, an id from `list_retailers`, or with `retailer`, a name: matched case-insensitively, or created if it doesn't exist yet. An id passed as `retailer` is refused rather than becoming a new shop's name. Every item line carries its own `currency_code`; only the order-level `currency_code` may be omitted, in which case the instance's reference currency is used.
+
+  An `other` line, with a `description`, records something on the order that the collection doesn't track: it creates no kit or catalog item and never moves stock. `adjustments` records what came off at the checkout, a discount, voucher or gift card, each as a `label` and an `amount_minor` in the order's currency; line prices stay what the shop charged. `notes` holds free text and changes no total.
 </Accordion>
 
 <Accordion title="list_orders">
@@ -103,7 +105,7 @@ These tools cover tools, consumables, upgrade parts, and display gear.
 </Accordion>
 
 <Accordion title="get_order">
-  Returns one order in full: header fields, all lines, and current status. This is the starting point for any edit.
+  Returns one order in full: header fields, all lines, its adjustments, and current status. Its `totals` give, per currency, the items, shipping, adjustments and what was paid. This is the starting point for any edit.
 </Accordion>
 
 <Accordion title="update_order">

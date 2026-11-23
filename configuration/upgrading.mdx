@@ -27,10 +27,10 @@ These steps are for an installation from the release files, as in [Installation]
     ```
   </Step>
   <Step title="Download the new version's files">
-    Use the number of the version you're updating to; the newest is **v0.6.0-alpha**. Run this as one line. It replaces the old release files, and your `.env` stays as it is:
+    Use the number of the version you're updating to; the newest is **v0.7.0-alpha**. Run this as one line. It replaces the old release files, and your `.env` stays as it is:
 
     ```bash
-    for f in docker-compose.yml env.example plamotrack-gunpla.zip release.json SHA256SUMS; do curl -fsSLO "https://github.com/DeusMaximus/plamotrack/releases/download/v0.6.0-alpha/$f"; done
+    for f in docker-compose.yml env.example plamotrack-gunpla.zip release.json SHA256SUMS; do curl -fsSLO "https://github.com/DeusMaximus/plamotrack/releases/download/v0.7.0-alpha/$f"; done
     ```
   </Step>
   <Step title="Check the files">
@@ -155,6 +155,38 @@ Versions before v0.5.2-alpha were installed with `git clone` and built on your c
 </Accordion>
 
 ## Changelog
+
+<Update label="v0.7.0-alpha" description="23 November 2026">
+  ## Orders say what they cost and what you paid
+
+  - **Discounts, vouchers and gift cards.** An order can record what came off its price at the checkout. Each one is a label and an amount in the order's currency, entered under **Discounts and gift cards** in the order editor. Line prices stay what the shop charged. The order shows what you actually paid: in the Orders list's total, and in a breakdown under the order's lines. Together, an order's discounts can't come to more than its lines in its currency plus its shipping. See [Discounts, vouchers and gift cards](/using/kits-and-orders#discounts-vouchers-and-gift-cards).
+    - **Changed:** the Orders list's total is now what was paid. For an order with no discounts, that is the same figure as before.
+  - **Lines for things the collection doesn't track.** An order line can be of type **Other**: something on the order that isn't a kit, tool, consumable, upgrade or display item, such as a magazine in a mixed basket. It takes a description, a quantity and a price, and counts toward the order's total. It adds nothing to your collection: no kit, no catalog item, no stock. A line's type still can't be changed, so to start tracking something, remove the line and add a kit or catalog line.
+  - **Order notes.** An order has a **Notes** field for what no other field holds: how it was paid, a substitution, a partial refund. It is in the order editor and under the order's expanded lines. A note changes no total and no stock.
+  - **AI assistants and scripts.** `create_order` and `update_order` take `adjustments`, `notes`, and `other` lines with a `description`. Every order read carries per-currency `totals`: items, shipping, adjustments and paid. Exports gain `order_adjustments.csv`, a `notes` column in `orders.csv` and a `description` column in `order_items.csv`.
+  - **A dialog saves only what you changed.** The order, kit and shop dialogs used to send every field back on each save, so anything an assistant, a script or another tab wrote to the record while the dialog was open was silently replaced. A save now sends only the fields you changed. Where you and an agent changed the same field, your save wins. An order save that stored its changes but then failed to mark the order shipped or received can be corrected and saved again.
+  - **Multi-line notes on tools and display items.** A tool's condition notes and a display item's notes are now edited in a box of several lines. A note with line breaks keeps them, and a note you don't change is not touched. The Inventory lists still show it as one run of text.
+  - **A line break in a one-line field**, such as a name given one through the API, an assistant or an import, now shows as a space in the editor. Saving stores what was on screen, instead of running the two words together.
+  - **Fixes.**
+    - Every way of saving a kit now refuses a name or grade of only spaces, and says which one is blank.
+    - A dialog whose data failed to load says what failed, with **Retry**, instead of showing Loading… forever. This covers the order dialog and the Inventory dialogs.
+    - A failed sign-out says so beside **Sign out**, and you stay signed in with everything working.
+    - Right after a reference-currency change, a **New order** or **Add tool** dialog waits for the new currency instead of starting on the old one.
+    - An import refuses a damaged or unusual archive, or a value holding a NUL character, with a reason instead of a server error. Kit build notes over about 131,000 characters, and CSVs with old Mac line endings, import again.
+    - Re-importing your own export no longer rewrites text saved with a trailing newline or surrounding spaces.
+    - A `create_order` refusal over MCP names the argument to correct, instead of "Invalid request parameters".
+    - **Settings → Access tokens** now says what each token level can import and export. See [What a token can't do](/authentication/access-tokens#what-a-token-cant-do).
+
+  **Update notes:** This release has **three migrations**, and no new settings. They only add: a notes column on orders, the **Other** line type, and a table for an order's discounts. No stored value is rewritten. Back up before updating, as always: returning to `v0.6.0-alpha` means restoring that backup. Downgrading the database in place is refused once any order holds an **Other** line or a discount.
+
+  - **Archives:** an export from this release has `export_version` 2. This release imports archives from every earlier release. v0.6.0-alpha and earlier refuse an archive written by this one and say to update first. See [Archives from another version](/using/import-export#archives-from-another-version).
+  - **PostgreSQL** moves to 16.16 from 16.15. It's the same major version and data format, so there's nothing to do.
+  - **A kit stored with a name or grade of only spaces** stops its own export at the import preview with "Name is required." Open the kit, give it a name or grade, and save, then export again.
+
+  **Known limitations at release:** If an order dialog is open while something else changes the order's currency or adds a discount, a save can read an amount in the wrong currency. Check the order's discounts after saving if an assistant was working on the same order ([#382](https://github.com/DeusMaximus/plamotrack/issues/382)). A script or assistant editing an order line whose kit has a blank name or grade must leave the kit details out, or fix the kit first ([#388](https://github.com/DeusMaximus/plamotrack/issues/388)). On a list, a lone carriage return in a free-text cell shows as nothing in Safari ([#399](https://github.com/DeusMaximus/plamotrack/issues/399)).
+
+  [Full release notes](https://github.com/DeusMaximus/plamotrack/releases/tag/v0.7.0-alpha)
+</Update>
 
 <Update label="v0.6.0-alpha" description="7 October 2026">
   ## Import from a phone, and lists that fit
